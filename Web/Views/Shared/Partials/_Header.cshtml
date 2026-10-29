@@ -1,0 +1,165 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using EShop.Domain.Entities
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+<header style="background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.05);position:sticky;top:0;z-index:100;">
+    <!-- Top bar -->
+    <div style="background:#1e293b;color:#cbd5e1;font-size:12px;padding:8px 0;">
+        <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <i class="fas fa-phone"></i> پشتیبانی: 021-12345678
+            </div>
+            <div style="display:flex;gap:16px;">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var user = await UserManager.GetUserAsync(User);
+                    <a href="/customer" style="color:#cbd5e1;">
+                        <i class="fas fa-user"></i> @user?.FirstName
+                    </a>
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" style="display:inline;margin:0;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" style="background:none;border:none;color:#cbd5e1;cursor:pointer;font-family:inherit;font-size:12px;">
+                            <i class="fas fa-sign-out-alt"></i> خروج
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a href="/account/login" style="color:#cbd5e1;">
+                        <i class="fas fa-sign-in-alt"></i> ورود / ثبت‌نام
+                    </a>
+                }
+                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" style="color:#cbd5e1;">
+                    <i class="fas fa-cog"></i> پنل مدیریت
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="container" style="padding:16px 20px;display:flex;align-items:center;gap:24px;">
+        <a href="/" style="font-size:22px;font-weight:800;color:var(--primary);text-decoration:none;">
+            <i class="fas fa-shopping-bag"></i> ستارخان
+        </a>
+
+        <form action="/shop" method="get" style="flex:1;max-width:600px;display:flex;gap:0;">
+            <input type="text" name="search" placeholder="جستجوی محصول..."
+                   style="flex:1;padding:10px 16px;border:2px solid var(--primary);border-left:0;
+                          border-radius:0 8px 8px 0;font-family:inherit;font-size:13px;outline:none;" />
+            <button type="submit" style="background:var(--primary);color:#fff;border:none;
+                    padding:0 20px;border-radius:8px 0 0 8px;cursor:pointer;">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+
+        <nav style="display:flex;gap:20px;align-items:center;">
+            <a href="/customer/wishlist" style="color:#333;display:flex;flex-direction:column;align-items:center;font-size:11px;">
+                <i class="fas fa-heart" style="font-size:18px;"></i> علاقه‌مندی
+            </a>
+            <a href="/cart" style="color:#333;display:flex;flex-direction:column;align-items:center;font-size:11px;position:relative;">
+                <i class="fas fa-shopping-cart" style="font-size:18px;"></i> سبد خرید
+                <span id="cartCount" style="position:absolute;top:-6px;left:-6px;background:var(--danger);
+                        color:#fff;font-size:10px;padding:2px 6px;border-radius:10px;">0</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Nav with Mega Menu -->
+    <div style="background:var(--primary);color:#fff;padding:0;">
+        <div class="container" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+
+            <!-- Mega Menu (سمت راست) -->
+            <partial name="Partials/_MegaMenu" />
+
+            <!-- Quick Links (سمت چپ) -->
+            <nav style="display:flex;gap:20px;align-items:center;padding:12px 0;
+                    font-size:13px;font-weight:600;flex-wrap:wrap;">
+                <a href="/" style="color:#fff;text-decoration:none;">صفحه اصلی</a>
+                <a href="/shop" style="color:#fff;text-decoration:none;">فروشگاه</a>
+                <a href="/shop?discounted=true" style="color:#fff;text-decoration:none;">
+                    <i class="fas fa-tag"></i> فروش ویژه
+                </a>
+                <a href="/shop?sort=most_viewed" style="color:#fff;text-decoration:none;">
+                    <i class="fas fa-fire"></i> پربازدیدترین
+                </a>
+                <a href="/shop?sort=best_selling" style="color:#fff;text-decoration:none;">
+                    پرفروش‌ترین
+                </a>
+                <a href="/shop?sort=newest" style="color:#fff;text-decoration:none;">
+                    جدیدترین
+                </a>
+            </nav>
+        </div>
+    </div>
+</header>
+
+<script>
+    fetch('/cart').then(() => {}).catch(() => {});
+</script>
+
+@* @using Microsoft.AspNetCore.Identity
+@using EShop.Domain.Entities
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+<header class="header">
+    <div class="container header-main">
+        <div class="header-row">
+            <!-- Hamburger (mobile) -->
+            <button class="icon-btn hamburger" onclick="openDrawer()" aria-label="منو">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Logo -->
+            <a href="/" class="logo">
+                <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
+                <span class="hidden-mobile">ستارخان</span>
+            </a>
+
+            <!-- Search -->
+            <form action="/shop" method="get" class="header-search">
+                <input type="text" name="search" placeholder="جستجوی محصول، برند یا دسته..." autocomplete="off" />
+                <button type="submit" aria-label="جستجو"><i class="fas fa-search"></i></button>
+            </form>
+
+            <!-- Actions -->
+            <div class="header-actions">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    var user = await UserManager.GetUserAsync(User);
+                    <a href="/customer" class="icon-btn hidden-mobile" title="حساب کاربری">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <a href="/customer/wishlist" class="icon-btn hidden-mobile" title="علاقه‌مندی">
+                        <i class="fas fa-heart"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="/account/login" class="icon-btn hidden-mobile" title="ورود">
+                        <i class="fas fa-user"></i>
+                    </a>
+                }
+
+                <a href="/cart" class="icon-btn" title="سبد خرید">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-badge" style="display:none;">0</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav bar (desktop) -->
+    <div class="header-nav">
+        <div class="container header-nav-inner">
+            <partial name="Partials/_MegaMenu" />
+            <a href="/">صفحه اصلی</a>
+            <a href="/shop">فروشگاه</a>
+            <a href="/shop?discounted=true"><i class="fas fa-tag"></i> فروش ویژه</a>
+            <a href="/shop?sort=most_viewed"><i class="fas fa-fire"></i> پربازدیدترین</a>
+            <a href="/shop?sort=best_selling">پرفروش‌ترین</a>
+            <a href="/shop?sort=newest">جدیدترین</a>
+        </div>
+    </div>
+</header> *@

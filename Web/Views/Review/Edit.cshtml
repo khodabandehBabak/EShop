@@ -1,0 +1,138 @@
+﻿@model MyReviewEditDto
+@{
+    ViewData["Title"] = "ویرایش نظر";
+    Layout = "_Layout";
+}
+
+<div class="container" style="padding:40px 20px;max-width:800px;">
+    <div style="background:#fff;border-radius:16px;padding:28px;
+                box-shadow:0 4px 20px rgba(0,0,0,.06);">
+
+        <h1 style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:16px;">
+            <i class="fas fa-edit" style="color:var(--primary);"></i> ویرایش نظر
+        </h1>
+
+        @if (!Model.CanStillEdit)
+        {
+            <div style="padding:14px;background:#fdeaea;border-radius:10px;
+                            border-right:4px solid var(--danger);margin-bottom:20px;">
+                <strong style="color:var(--danger);">
+                    <i class="fas fa-exclamation-triangle"></i> مهلت ویرایش به پایان رسیده
+                </strong>
+                <p style="font-size:12px;color:#991b1b;margin-top:6px;">
+                    مهلت ویرایش هر نظر ۲۴ ساعت پس از ثبت است.
+                </p>
+                <a href="/customer/reviews"
+                   style="color:var(--danger);text-decoration:underline;font-size:12px;">
+                    بازگشت به نظرات من
+                </a>
+            </div>
+        }
+        else
+        {
+            <!-- محصول -->
+            <div style="display:flex;gap:12px;padding:12px;background:var(--light);
+                            border-radius:10px;margin-bottom:20px;">
+                @if (!string.IsNullOrEmpty(Model.ProductImage))
+                {
+                    <img src="@Model.ProductImage" style="width:60px;height:60px;
+                                        object-fit:cover;border-radius:8px;" />
+                }
+                <div>
+                    <div style="font-size:11px;color:var(--gray);">روی محصول:</div>
+                    <a href="/product/@Model.ProductSlug" target="_blank"
+                       style="font-weight:700;font-size:13px;color:var(--dark);">
+                        @Model.ProductName
+                    </a>
+                </div>
+            </div>
+
+            <!-- فرم -->
+            <form id="editForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" value="@Model.Id" />
+                <input type="hidden" name="ProductId" value="@Model.ProductId" />
+                <input type="hidden" name="Rating" id="ratingValue" value="@Model.Rating" />
+
+                <!-- امتیاز -->
+                <div style="margin-bottom:16px;">
+                    <div class="form-label">امتیاز *</div>
+                    <div id="starSelector" style="font-size:32px;color:#ffc107;cursor:pointer;direction:ltr;display:inline-flex;">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <span data-val="@i" class="star"
+                                  style="opacity:@(i <= Model.Rating ? 1 : .3);">★</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- عنوان -->
+                <div style="margin-bottom:16px;">
+                    <div class="form-label">عنوان (اختیاری)</div>
+                    <input name="Title" value="@Model.Title" maxlength="100"
+                           class="form-control" />
+                </div>
+
+                <!-- متن -->
+                <div style="margin-bottom:16px;">
+                    <div class="form-label">نظر شما</div>
+                    <textarea name="Comment" rows="5" maxlength="2000"
+                          class="form-control">@Model.Comment</textarea>
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" id="saveBtn" class="btn btn-primary">
+                        <i class="fas fa-save"></i> ذخیره تغییرات
+                    </button>
+                    <a href="/customer/reviews" class="btn btn-outline">انصراف</a>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ستاره‌ها
+        (function() {
+            const stars = document.querySelectorAll('#starSelector .star');
+            const input = document.getElementById('ratingValue');
+            if (!input) return;
+
+            stars.forEach((s, i) => {
+                s.addEventListener('click', () => {
+                    input.value = i + 1;
+                    stars.forEach((s2, j) => s2.style.opacity = j <= i ? '1' : '.3');
+                });
+            });
+        })();
+
+        // Submit
+        document.getElementById('editForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const rating = parseInt(document.getElementById('ratingValue').value) || 0;
+            if (rating < 1) { showToast('امتیاز را انتخاب کنید', 'error'); return; }
+
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> در حال ذخیره...';
+
+            try {
+                const fd = new FormData(this);
+                const res = await fetch('/review/edit', { method: 'POST', body: fd }).then(r => r.json());
+                if (res.success) {
+                    showToast(res.message, 'success');
+                    setTimeout(() => window.location.href = '/customer/reviews', 1000);
+                } else {
+                    showToast(res.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save"></i> ذخیره تغییرات';
+                }
+            } catch {
+                showToast('خطا در ارتباط با سرور', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> ذخیره تغییرات';
+            }
+        });
+    </script>
+}

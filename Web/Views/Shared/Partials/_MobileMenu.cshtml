@@ -1,0 +1,30 @@
+﻿<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+
+<aside class="drawer" id="mobileDrawer">
+    <div class="drawer-header">
+        <strong style="font-size:15px;">منوی فروشگاه</strong>
+        <button class="icon-btn" onclick="closeDrawer()" aria-label="بستن">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div class="drawer-body">
+        <ul class="drawer-menu">
+            <li><a href="/"><i class="fas fa-home"></i> صفحه اصلی</a></li>
+            <li><a href="/shop"><i class="fas fa-store"></i> فروشگاه</a></li>
+            <li><a href="/shop?discounted=true"><i class="fas fa-tag"></i> فروش ویژه</a></li>
+            <li><a href="/shop?sort=most_viewed"><i class="fas fa-fire"></i> پربازدیدترین</a></li>
+            <li><a href="/shop?sort=best_selling"><i class="fas fa-star"></i> پرفروش‌ترین</a></li>
+            <li><a href="/shop?sort=newest"><i class="fas fa-clock"></i> جدیدترین</a></li>
+        </ul>
+
+        <h4 style="margin:20px 0 10px;font-size:12px;color:var(--text-3);font-weight:700;">حساب کاربری</h4>
+        <ul class="drawer-menu">
+            <li><a href="/customer"><i class="fas fa-user"></i> پنل کاربری</a></li>
+            <li><a href="/customer/orders"><i class="fas fa-shopping-bag"></i> سفارشات من</a></li>
+            <li><a href="/customer/wishlist"><i class="fas fa-heart"></i> علاقه‌مندی</a></li>
+            <li><a href="/customer/reviews"><i class="fas fa-comments"></i> نظرات من</a></li>
+            <li><a href="/account/login"><i class="fas fa-sign-in-alt"></i> ورود / ثبت‌نام</a></li>
+        </ul>
+    </div>
+</aside>

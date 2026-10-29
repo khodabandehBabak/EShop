@@ -1,0 +1,134 @@
+﻿@model List<AttributeListItemDto>
+@{
+    ViewData["Title"] = "مدیریت ویژگی‌ها";
+    var search = ViewBag.Search as string;
+}
+
+<div class="panel">
+    <form method="get" style="display:flex;gap:8px;margin-bottom:16px;">
+        <input name="search" value="@search" placeholder="جستجوی نام یا Slug..."
+               class="form-control" style="flex:1;" />
+        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> جستجو</button>
+        @if (!string.IsNullOrEmpty(search))
+        {
+            <a href="/admin/attributes" class="btn btn-outline">پاک کردن</a>
+        }
+    </form>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size:15px;font-weight:700;">ویژگی‌ها (@Model.Count)</h2>
+        <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> ویژگی جدید</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align:center;padding:50px;color:var(--gray);">
+            <i class="fas fa-sliders-h" style="font-size:60px;opacity:.3;"></i>
+            <p style="margin-top:12px;">ویژگی‌ای یافت نشد</p>
+        </div>
+    }
+    else
+    {
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+            @foreach (var a in Model)
+            {
+                <div id="card-@a.Id" style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#fff;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                        <div>
+                            <div style="font-weight:700;font-size:14px;">@a.Name</div>
+                            <div style="font-size:11px;color:var(--gray);" dir="ltr">/@a.Slug</div>
+                        </div>
+                        <span style="background:@GetTypeBg(a.Type);color:@GetTypeColor(a.Type);
+                                             padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">
+                            @GetTypeLabel(a.Type)
+                        </span>
+                    </div>
+
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+                        <span style="background:#e6f4ff;color:var(--primary);padding:2px 8px;border-radius:8px;font-size:10px;">
+                            <i class="fas fa-list"></i> @a.OptionCount مقدار
+                        </span>
+                        <span style="background:#fff3e0;color:var(--warning);padding:2px 8px;border-radius:8px;font-size:10px;">
+                            <i class="fas fa-cube"></i> @a.ProductUsageCount محصول
+                        </span>
+                        <button onclick="toggleFilterable(@a.Id, this)" data-val="@a.IsFilterable.ToString().ToLower()"
+                                style="background:@(a.IsFilterable ? "#e8f8f0" : "#f1f5f9");
+                                               color:@(a.IsFilterable ? "var(--success)" : "var(--gray)");
+                                               padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;
+                                               border:none;cursor:pointer;">
+                            @(a.IsFilterable ? "✓ قابل فیلتر" : "✗ بدون فیلتر")
+                        </button>
+                    </div>
+
+                    <div style="display:flex;gap:6px;">
+                        <a asp-action="Edit" asp-route-id="@a.Id" class="btn btn-primary btn-sm" style="flex:1;">
+                            <i class="fas fa-edit"></i> مدیریت
+                        </a>
+                        <button onclick="del(@a.Id, '@a.Name')" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function token() { return $('input[name="__RequestVerificationToken"]').val() || ''; }
+
+        function toggleFilterable(id, btn) {
+            fetch('/admin/attributes/togglefilterable/' + id, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token() }
+            }).then(r => r.json()).then(res => {
+                if (res.success) {
+                    btn.dataset.val = res.isFilterable;
+                    btn.textContent = res.isFilterable ? '✓ قابل فیلتر' : '✗ بدون فیلتر';
+                    btn.style.background = res.isFilterable ? '#e8f8f0' : '#f1f5f9';
+                    btn.style.color = res.isFilterable ? 'var(--success)' : 'var(--gray)';
+                }
+            });
+        }
+
+        function del(id, name) {
+            if (!confirm(`حذف ویژگی «${name}»؟`)) return;
+            fetch('/admin/attributes/delete/' + id, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token() }
+            }).then(r => r.json()).then(res => {
+                if (res.success) {
+                    document.getElementById('card-' + id)?.remove();
+                    showToast(res.message, 'success');
+                } else {
+                    showToast(res.message, 'error');
+                }
+            });
+        }
+    </script>
+}
+
+@functions {
+    string GetTypeLabel(AttributeType t) => t switch
+    {
+        AttributeType.Select => "انتخابی",
+        AttributeType.Color => "رنگی",
+        AttributeType.Text => "متنی",
+        _ => t.ToString()
+    };
+    string GetTypeBg(AttributeType t) => t switch
+    {
+        AttributeType.Select => "#e6f4ff",
+        AttributeType.Color => "#f3e8ff",
+        AttributeType.Text => "#f1f5f9",
+        _ => "#f1f5f9"
+    };
+    string GetTypeColor(AttributeType t) => t switch
+    {
+        AttributeType.Select => "#0088cc",
+        AttributeType.Color => "#8e44ad",
+        AttributeType.Text => "#64748b",
+        _ => "#64748b"
+    };
+}

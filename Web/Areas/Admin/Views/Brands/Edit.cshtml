@@ -1,0 +1,7 @@
+﻿@model BrandEditDto
+@{ ViewData["Title"] = "ویرایش برند"; }
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <partial name="_Form" model="Model" />
+</form>

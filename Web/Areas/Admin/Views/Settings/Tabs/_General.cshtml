@@ -1,0 +1,47 @@
+﻿@model GeneralSettingsDto
+
+<form asp-action="SaveGeneral" method="post">
+    @Html.AntiForgeryToken()
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+            <div class="form-label">نام سایت *</div>
+            <input asp-for="SiteName" class="form-control" required maxlength="200" />
+        </div>
+        <div>
+            <div class="form-label">شعار سایت</div>
+            <input asp-for="SiteTagline" class="form-control" maxlength="200" />
+        </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <div class="form-label">توضیحات سایت</div>
+        <textarea asp-for="SiteDescription" class="form-control" rows="2" maxlength="500"></textarea>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <div class="form-label">کلمات کلیدی</div>
+        <input asp-for="SiteKeywords" class="form-control" maxlength="500"
+               placeholder="فروشگاه، خرید آنلاین، ..." />
+        <small style="color:var(--gray);font-size:11px;">با کاما جدا کنید</small>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div>
+            <div class="form-label">واحد پول</div>
+            <select asp-for="Currency" class="form-select">
+                <option value="تومان">تومان</option>
+                <option value="ریال">ریال</option>
+            </select>
+        </div>
+        <div>
+            <div class="form-label">منطقه زمانی</div>
+            <select asp-for="TimeZone" class="form-select">
+                <option value="Asia/Tehran">Asia/Tehran</option>
+                <option value="UTC">UTC</option>
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ذخیره</button>
+</form>

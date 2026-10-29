@@ -1,0 +1,191 @@
+﻿@model List<ProductListItemDto>
+@{
+    ViewData["Title"] = "مدیریت محصولات";
+    var search = ViewBag.Search as string;
+    var isActive = ViewBag.IsActive as bool?;
+    var categories = ViewBag.Categories as List<SelectListItem> ?? new();
+    var brands = ViewBag.Brands as List<SelectListItem> ?? new();
+    int page = (int)ViewBag.Page;
+    int totalPages = (int)ViewBag.TotalPages;
+}
+
+<div class="panel">
+    <form method="get" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <input name="search" value="@search" placeholder="جستجوی نام یا SKU..."
+               class="form-control" style="flex:1;min-width:200px;" />
+        <select name="categoryId" class="form-select" style="min-width:160px;">
+            <option value="">همه دسته‌ها</option>
+            @foreach (var c in categories)
+            {
+                <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+            }
+        </select>
+        <select name="brandId" class="form-select" style="min-width:140px;">
+            <option value="">همه برندها</option>
+            @foreach (var b in brands)
+            {
+                <option value="@b.Value" selected="@b.Selected">@b.Text</option>
+            }
+        </select>
+        <select name="isActive" class="form-select" style="min-width:130px;">
+            <option value="">همه وضعیت‌ها</option>
+            <option value="true" selected="@(isActive == true)">فعال</option>
+            <option value="false" selected="@(isActive == false)">غیرفعال</option>
+        </select>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> جستجو</button>
+    </form>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="font-size:15px;font-weight:700;color:var(--dark);">
+            محصولات (@ViewBag.Total)
+        </h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> محصول جدید
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align:center;padding:50px;color:var(--gray);">
+            <i class="fas fa-box-open" style="font-size:60px;opacity:.3;"></i>
+            <p style="margin-top:12px;">محصولی یافت نشد</p>
+        </div>
+    }
+    else
+    {
+        <div style="overflow-x:auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>تصویر</th>
+                        <th>نام</th>
+                        <th>دسته / برند</th>
+                        <th>قیمت</th>
+                        <th>موجودی</th>
+                        <th>بازدید</th>
+                        <th>وضعیت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr id="row-@p.Id">
+                            <td>
+                                @if (!string.IsNullOrEmpty(p.MainImage))
+                                {
+                                    <img src="@p.MainImage" style="width:50px;height:50px;object-fit:cover;border-radius:8px;" />
+                                }
+                                else
+                                {
+                                    <div style="width:50px;height:50px;background:var(--light);border-radius:8px;
+                                                            display:flex;align-items:center;justify-content:center;color:var(--gray);">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td style="font-weight:600;max-width:250px;">@p.Name</td>
+                            <td style="font-size:12px;color:var(--gray);">
+                                @p.CategoryName
+                                @if (!string.IsNullOrEmpty(p.BrandName))
+                                {
+                                    <span> · @p.BrandName</span>
+                                }
+                            </td>
+                            <td>
+                                @if (p.DiscountPrice.HasValue)
+                                {
+                                    <div style="font-weight:700;color:var(--success);">@p.DiscountPrice.Value.ToString("N0")</div>
+                                    <div style="font-size:11px;color:var(--gray);text-decoration:line-through;">
+                                        @p.Price.ToString("N0")
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div style="font-weight:700;">@p.Price.ToString("N0")</div>
+                                }
+                            </td>
+                            <td>
+                                <span style="font-weight:600;color:@(p.Stock > 5 ? "var(--success)" : "var(--warning)");">
+                                    @p.Stock
+                                </span>
+                            </td>
+                            <td>
+                                <span style="background:#e6f4ff;color:var(--primary);padding:3px 8px;
+                                                     border-radius:8px;font-size:11px;">
+                                    @p.ViewCount.ToString("N0")
+                                </span>
+                            </td>
+                            <td>
+                                <button onclick="toggleActive(@p.Id, this)"
+                                        data-active="@p.IsActive.ToString().ToLower()"
+                                        style="border:none;background:none;cursor:pointer;
+                                                       font-size:12px;font-weight:600;
+                                                       color:@(p.IsActive ? "var(--success)" : "var(--danger)");">
+                                    @(p.IsActive ? "✓ فعال" : "✗ غیرفعال")
+                                </button>
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;">
+                                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button onclick="deleteItem(@p.Id, '@p.Name')"
+                                            class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div style="display:flex;justify-content:center;gap:6px;margin-top:20px;">
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <a href="?page=@i&search=@search&isActive=@isActive"
+                       style="padding:8px 14px;border-radius:6px;
+                                          text-decoration:none;font-weight:600;font-size:13px;
+                                          background:@(i == page ? "var(--primary)" : "var(--light)");
+                                          color:@(i == page ? "#fff" : "#333");">
+                        @i
+                    </a>
+                }
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function toggleActive(id, btn) {
+            fetch('/admin/products/toggleactive/' + id, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || '' }
+            }).then(r => r.json()).then(res => {
+                if (res.success) {
+                    btn.textContent = res.isActive ? '✓ فعال' : '✗ غیرفعال';
+                    btn.style.color = res.isActive ? 'var(--success)' : 'var(--danger)';
+                    btn.dataset.active = res.isActive;
+                }
+            });
+        }
+
+        function deleteItem(id, name) {
+            if (!confirm(`حذف «${name}»؟`)) return;
+            fetch('/admin/products/delete/' + id, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || '' }
+            }).then(r => r.json()).then(res => {
+                if (res.success) {
+                    document.getElementById('row-' + id)?.remove();
+                    showToast(res.message, 'success');
+                } else showToast(res.message, 'error');
+            });
+        }
+    </script>
+}

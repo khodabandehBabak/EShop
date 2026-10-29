@@ -1,0 +1,473 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    string Active(string name) => currentController == name ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] | پنل کاربری</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0088cc;
+            --success: #00b16b;
+            --danger: #e74c3c;
+            --warning: #e67e22;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            direction: rtl;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .customer-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .customer-sidebar {
+            width: 260px;
+            background: #fff;
+            box-shadow: -2px 0 12px rgba(0,0,0,.04);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+            .customer-sidebar .brand {
+                padding: 0 20px 20px;
+                border-bottom: 1px solid var(--border);
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+                .customer-sidebar .brand .avatar {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, var(--primary), #00a0f0);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #fff;
+                    font-weight: 800;
+                    font-size: 18px;
+                }
+
+                .customer-sidebar .brand .name {
+                    font-weight: 700;
+                    font-size: 13px;
+                    color: var(--dark);
+                }
+
+                .customer-sidebar .brand .phone {
+                    font-size: 11px;
+                    color: var(--gray);
+                }
+
+        .customer-nav {
+            list-style: none;
+            padding: 0 12px;
+        }
+
+            .customer-nav li a {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 11px 14px;
+                border-radius: 8px;
+                color: #475569;
+                font-weight: 500;
+                font-size: 13px;
+                transition: all .2s;
+                margin-bottom: 2px;
+            }
+
+                .customer-nav li a:hover {
+                    background: #f0f9ff;
+                    color: var(--primary);
+                }
+
+                .customer-nav li a.active {
+                    background: var(--primary);
+                    color: #fff;
+                }
+
+                .customer-nav li a i {
+                    width: 20px;
+                    text-align: center;
+                    font-size: 15px;
+                }
+
+        .customer-main {
+            flex: 1;
+            padding: 20px 28px;
+            max-width: 1000px;
+        }
+
+        .customer-topbar {
+            background: #fff;
+            padding: 14px 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .customer-topbar .title {
+                font-size: 18px;
+                font-weight: 800;
+                color: var(--dark);
+            }
+
+        .panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all .2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: #333;
+            border: 1px solid var(--border);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+            .form-control:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(0,136,204,.1);
+            }
+
+        .alert {
+            padding: 13px 18px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .alert-success {
+            background: #e8f8f0;
+            color: #047857;
+        }
+
+        .alert-danger {
+            background: #fdeaea;
+            color: #991b1b;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+            transition: all .2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(0,0,0,.08);
+            }
+
+            .stat-card .icon {
+                width: 48px;
+                height: 48px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                flex-shrink: 0;
+            }
+
+            .stat-card .num {
+                font-size: 22px;
+                font-weight: 800;
+                color: var(--dark);
+            }
+
+            .stat-card .label {
+                font-size: 12px;
+                color: var(--gray);
+            }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: var(--warning);
+        }
+
+        .status-paid {
+            background: #e8f8f0;
+            color: var(--success);
+        }
+
+        .status-shipped {
+            background: #e0f2fe;
+            color: #3498db;
+        }
+
+        .status-delivered {
+            background: #e8f8f0;
+            color: var(--success);
+        }
+
+        .status-cancelled {
+            background: #fdeaea;
+            color: var(--danger);
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 9999;
+            background: #fff;
+            padding: 14px 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.15);
+            font-size: 13px;
+            font-weight: 600;
+            max-width: 400px;
+            animation: slideIn .3s;
+        }
+
+            .toast.success {
+                border-right: 4px solid var(--success);
+            }
+
+            .toast.error {
+                border-right: 4px solid var(--danger);
+            }
+
+        @@keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @@media (max-width: 991px) {
+            .customer-sidebar {
+                position: fixed;
+                right: -260px;
+                z-index: 100;
+                transition: right .3s;
+            }
+
+                .customer-sidebar.open {
+                    right: 0;
+                }
+
+            .customer-main {
+                padding: 16px;
+            }
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="customer-wrapper">
+        <aside class="customer-sidebar" id="customerSidebar">
+            <div class="brand">
+                <div class="avatar">@(User.Identity?.Name?.Substring(0, 1) ?? "U")</div>
+                <div>
+                    <div class="name">@User.Identity?.Name</div>
+                    <div class="phone">@User.FindFirst("PhoneNumber")?.Value</div>
+                </div>
+            </div>
+            <ul class="customer-nav">
+                <li>
+                    <a asp-area="Customer" asp-controller="Dashboard" asp-action="Index" class="@Active("Dashboard")">
+                        <i class="fas fa-tachometer-alt"></i> داشبورد
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="Customer" asp-controller="Orders" asp-action="Index" class="@Active("Orders")">
+                        <i class="fas fa-shopping-bag"></i> سفارش‌های من
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="Customer" asp-controller="Wishlist" asp-action="Index" class="@Active("Wishlist")">
+                        <i class="fas fa-heart"></i> علاقه‌مندی‌ها
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="Customer" asp-controller="Address" asp-action="Index" class="@Active("Address")">
+                        <i class="fas fa-map-marker-alt"></i> آدرس‌های من
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="Customer" asp-controller="Reviews" asp-action="Index" class="@Active("Reviews")">
+                        <i class="fas fa-comments"></i> نظرات من
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="Customer" asp-controller="Profile" asp-action="Index" class="@Active("Profile")">
+                        <i class="fas fa-user"></i> پروفایل
+                    </a>
+                </li>
+                <li style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" style="width:100%;background:none;border:none;
+                                display:flex;align-items:center;gap:10px;padding:11px 14px;
+                                border-radius:8px;color:var(--danger);font-weight:500;
+                                cursor:pointer;font-size:13px;font-family:inherit;">
+                            <i class="fas fa-sign-out-alt" style="width:20px;text-align:center;"></i> خروج
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+
+        <div class="customer-main">
+            <div class="customer-topbar">
+                <h1 class="title">@ViewData["Title"]</h1>
+                <a href="/" class="btn btn-outline btn-sm">
+                    <i class="fas fa-home"></i> بازگشت به فروشگاه
+                </a>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> @TempData["Success"]
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+                </div>
+            }
+
+            @RenderBody()
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+    <script>
+        function showToast(msg, type) {
+            type = type || 'success';
+            const div = document.createElement('div');
+            div.className = 'toast ' + type;
+            div.textContent = msg;
+            document.getElementById('toastContainer').appendChild(div);
+            setTimeout(() => div.remove(), 4000);
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

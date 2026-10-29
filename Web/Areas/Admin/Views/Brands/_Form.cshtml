@@ -1,0 +1,53 @@
+﻿@model BrandEditDto
+@{
+    var isEdit = Model.Id > 0;
+}
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+    <div class="panel">
+        <div class="panel-title"><i class="fas fa-tag"></i> اطلاعات برند</div>
+
+        <div class="form-label">نام برند *</div>
+        <input asp-for="Name" class="form-control" style="margin-bottom:12px;" required />
+
+        <div class="form-label">Slug</div>
+        <input asp-for="Slug" class="form-control" dir="ltr" style="margin-bottom:12px;" />
+
+        <div class="form-label">وب‌سایت</div>
+        <input asp-for="Website" class="form-control" dir="ltr" placeholder="https://..." style="margin-bottom:12px;" />
+
+        <div class="form-label">توضیحات</div>
+        <textarea asp-for="Description" class="form-control" rows="3" style="margin-bottom:12px;"></textarea>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <div class="form-label">ترتیب</div>
+                <input asp-for="DisplayOrder" type="number" class="form-control" />
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:8px;">
+                <label><input asp-for="IsActive" type="checkbox" /> فعال</label>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-image"></i> لوگو</div>
+            @if (!string.IsNullOrEmpty(Model.ExistingLogoUrl))
+            {
+                <img src="@Model.ExistingLogoUrl" style="width:100%;border-radius:8px;margin-bottom:8px;" />
+                <label style="display:block;font-size:12px;color:var(--danger);margin-bottom:8px;">
+                    <input asp-for="RemoveLogo" type="checkbox" /> حذف لوگوی فعلی
+                </label>
+            }
+            <input type="file" asp-for="LogoFile" accept="image/*" style="width:100%;" />
+        </div>
+
+        <div class="panel">
+            <button type="submit" class="btn btn-primary" style="width:100%;height:44px;">
+                <i class="fas fa-save"></i> @(isEdit ? "ذخیره" : "ایجاد")
+            </button>
+            <a asp-action="Index" class="btn btn-outline" style="width:100%;margin-top:8px;text-align:center;">انصراف</a>
+        </div>
+    </div>
+</div>

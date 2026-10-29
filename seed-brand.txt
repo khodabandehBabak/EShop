@@ -1,0 +1,130 @@
+var now = DateTime.UtcNow;
+
+db.Brands.AddRange(
+    new Brand
+    {
+        Id = 1, Name = "برند عمومی", Slug = "general-brand",
+        Website = null, LogoUrl = null, Description = null,
+        DisplayOrder = 1, IsActive = true, IsFeatured = false, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 2, Name = "کاله", Slug = "kalleh",
+        Website = "https://www.kalleh.com", LogoUrl = "/uploads/brands/kalleh.png",
+        Description = "فراورده‌های لبنی، بستنی، نوشیدنی و محصولات پروتئینی",
+        DisplayOrder = 10, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 3, Name = "میهن", Slug = "mihan",
+        Website = "https://www.mihan-food.com", LogoUrl = "/uploads/brands/mihan.png",
+        Description = "لبنیات، بستنی و آبمیوه",
+        DisplayOrder = 20, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 4, Name = "دامداران", Slug = "damdaran",
+        Website = "https://damdaran.ir", LogoUrl = "/uploads/brands/damdaran.png",
+        Description = "لبنیات پاستوریزه و استریل، شیر و ماست",
+        DisplayOrder = 30, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 5, Name = "دلستر (بهنوش)", Slug = "delester-behnoush",
+        Website = "https://behnoushiran.com", LogoUrl = "/uploads/brands/delester.png",
+        Description = "ماءالشعیر و نوشیدنی‌های مالت",
+        DisplayOrder = 40, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 6, Name = "چی‌توز", Slug = "cheetoz",
+        Website = null, LogoUrl = "/uploads/brands/cheetoz.png",
+        Description = "چیپس، اسنک و تنقلات",
+        DisplayOrder = 50, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 7, Name = "مینو", Slug = "mino",
+        Website = "https://www.minobrands.com", LogoUrl = "/uploads/brands/mino.png",
+        Description = "بیسکویت، ویفر، شکلات و تنقلات",
+        DisplayOrder = 60, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 8, Name = "شیرین عسل", Slug = "shirin-asal",
+        Website = "https://www.shirinasal.com", LogoUrl = "/uploads/brands/shirin-asal.png",
+        Description = "بیسکویت، شکلات، ویفر و کیک",
+        DisplayOrder = 70, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 9, Name = "گلرنگ", Slug = "golrang",
+        Website = "https://golrang.com", LogoUrl = "/uploads/brands/golrang.png",
+        Description = "شوینده، بهداشتی و آرایشی",
+        DisplayOrder = 80, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 10, Name = "پاکسان", Slug = "paksan",
+        Website = "https://www.paksan.com", LogoUrl = "/uploads/brands/paksan.png",
+        Description = "شوینده، بهداشتی و آرایشی",
+        DisplayOrder = 90, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 11, Name = "زر ماکارون", Slug = "zar-macaron",
+        Website = "https://www.zarmacaron.com", LogoUrl = "/uploads/brands/zar-macaron.png",
+        Description = "ماکارونی، پاستا و رشته",
+        DisplayOrder = 100, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 12, Name = "عالیس", Slug = "alis",
+        Website = "https://www.alis.ir", LogoUrl = "/uploads/brands/alis.png",
+        Description = "آبمیوه، نوشیدنی و شیرهای طعم‌دار",
+        DisplayOrder = 110, IsActive = true, IsFeatured = true, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+    new Brand
+    {
+        Id = 13, Name = "سن‌ایچ", Slug = "sanich",
+        Website = null, LogoUrl = "/uploads/brands/sanich.png",
+        Description = "آبمیوه و نوشیدنی",
+        DisplayOrder = 120, IsActive = true, IsFeatured = false, IsDeleted = false,
+        CreatedAt = now, UpdatedAt = null
+    },
+ new Brand { Id = 14, Name = "آتوشه", Slug = "atousheh", Website = "https://atousheh.ir", LogoUrl = "/uploads/brands/atousheh.png", Description = "غلات، حبوبات و محصولات خشکبار", DisplayOrder = 130, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 15, Name = "رضا", Slug = "reza", Website = "https://rezafood.com", LogoUrl = "/uploads/brands/reza.png", Description = "ماکارونی، کنسرو و غذای آماده", DisplayOrder = 140, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 16, Name = "کوکاکولا", Slug = "coca-cola", Website = "https://www.coca-cola.com", LogoUrl = "/uploads/brands/coca-cola.png", Description = "نوشیدنی‌های گازدار", DisplayOrder = 150, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 17, Name = "اسپرایت", Slug = "sprite", Website = "https://www.coca-cola.com/sprite", LogoUrl = "/uploads/brands/sprite.png", Description = "نوشیدنی گازدار با طعم لیمو", DisplayOrder = 160, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 18, Name = "ردبول", Slug = "redbull", Website = "https://www.redbull.com", LogoUrl = "/uploads/brands/redbull.png", Description = "نوشیدنی انرژی‌زا", DisplayOrder = 170, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 19, Name = "هایپ", Slug = "hype", Website = null, LogoUrl = "/uploads/brands/hype.png", Description = "نوشیدنی انرژی‌زا", DisplayOrder = 180, IsActive = true, IsFeatured = false, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 20, Name = "خومالی", Slug = "khomali", Website = null, LogoUrl = "/uploads/brands/khomali.png", Description = "دوغ و نوشیدنی‌های لبنی", DisplayOrder = 190, IsActive = true, IsFeatured = false, IsDeleted = false, CreatedAt = now, UpdatedAt = null }
+
+);
+
+await db.SaveChangesAsync();
+
+
+
+db.Brands.AddRange(
+    new Brand { Id = 14, Name = "آتوشه", Slug = "atousheh", Website = "https://atousheh.ir", LogoUrl = "/uploads/brands/atousheh.png", Description = "غلات، حبوبات و محصولات خشکبار", DisplayOrder = 130, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 15, Name = "رضا", Slug = "reza", Website = "https://rezafood.com", LogoUrl = "/uploads/brands/reza.png", Description = "ماکارونی، کنسرو و غذای آماده", DisplayOrder = 140, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 16, Name = "کوکاکولا", Slug = "coca-cola", Website = "https://www.coca-cola.com", LogoUrl = "/uploads/brands/coca-cola.png", Description = "نوشیدنی‌های گازدار", DisplayOrder = 150, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 17, Name = "اسپرایت", Slug = "sprite", Website = "https://www.coca-cola.com/sprite", LogoUrl = "/uploads/brands/sprite.png", Description = "نوشیدنی گازدار با طعم لیمو", DisplayOrder = 160, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 18, Name = "ردبول", Slug = "redbull", Website = "https://www.redbull.com", LogoUrl = "/uploads/brands/redbull.png", Description = "نوشیدنی انرژی‌زا", DisplayOrder = 170, IsActive = true, IsFeatured = true, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 19, Name = "هایپ", Slug = "hype", Website = null, LogoUrl = "/uploads/brands/hype.png", Description = "نوشیدنی انرژی‌زا", DisplayOrder = 180, IsActive = true, IsFeatured = false, IsDeleted = false, CreatedAt = now, UpdatedAt = null },
+    new Brand { Id = 20, Name = "خومالی", Slug = "khomali", Website = null, LogoUrl = "/uploads/brands/khomali.png", Description = "دوغ و نوشیدنی‌های لبنی", DisplayOrder = 190, IsActive = true, IsFeatured = false, IsDeleted = false, CreatedAt = now, UpdatedAt = null }
+);
+await db.SaveChangesAsync();

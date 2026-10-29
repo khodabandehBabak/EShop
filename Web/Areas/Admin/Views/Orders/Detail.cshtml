@@ -1,0 +1,144 @@
+﻿@model OrderAdminDetailDto
+@{
+    ViewData["Title"] = "سفارش " + Model.OrderNumber;
+}
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+    <div>
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-box"></i> اقلام سفارش</div>
+            <table class="admin-table">
+                <thead><tr><th>محصول</th><th>تعداد</th><th>قیمت واحد</th><th>جمع</th></tr></thead>
+                <tbody>
+                    @foreach (var i in Model.Items)
+                    {
+                        <tr>
+                            <td style="font-weight:600;">@i.ProductName</td>
+                            <td>@i.Quantity</td>
+                            <td>@i.UnitPrice.ToString("N0")</td>
+                            <td style="font-weight:700;color:var(--success);">@i.TotalPrice.ToString("N0")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align:left;">جمع کل:</td>
+                        <td style="font-weight:800;color:var(--success);">@Model.TotalAmount.ToString("N0")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-clock"></i> تاریخچه</div>
+            @foreach (var h in Model.Timeline)
+            {
+                <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);">
+                    <div style="width:30px;height:30px;border-radius:50%;background:@h.Color;color:#fff;
+                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="@h.Icon" style="font-size:11px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:600;font-size:12px;">@h.StatusLabel</div>
+                        @if (!string.IsNullOrEmpty(h.Note))
+                        {
+                            <div style="font-size:11px;color:var(--gray);">@h.Note</div>
+                        }
+                        <div style="font-size:10px;color:var(--gray);">@h.ChangedAt.ToString("yyyy/MM/dd HH:mm")</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div>
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-user"></i> اطلاعات مشتری</div>
+            <div style="font-size:12px;line-height:2;">
+                <div><strong>@Model.ReceiverName</strong></div>
+                <div dir="ltr">@Model.ReceiverPhone</div>
+                <div>@Model.Province، @Model.City</div>
+                <div>@Model.FullAddress</div>
+                <div>کد پستی: @Model.PostalCode</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-tasks"></i> عملیات</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                @if (Model.CanProcess)
+                {
+                    <button onclick="doAction('startprocessing')" class="btn btn-primary"><i class="fas fa-tools"></i> شروع پردازش</button>
+                }
+                @if (Model.CanPack)
+                {
+                    <button onclick="doPack()" class="btn btn-warning"><i class="fas fa-box"></i> بسته‌بندی</button>
+                }
+                @if (Model.CanShip)
+                {
+                    <button onclick="doShip()" class="btn btn-primary"><i class="fas fa-truck"></i> ثبت ارسال</button>
+                }
+                @if (Model.CanDeliver)
+                {
+                    <button onclick="doAction('markdelivered')" class="btn btn-success"><i class="fas fa-check"></i> تأیید تحویل</button>
+                }
+                @if (Model.CanCancel)
+                {
+                    <button onclick="doCancel()" class="btn btn-danger"><i class="fas fa-times"></i> لغو سفارش</button>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.TrackingNumber))
+        {
+            <div class="panel" style="background:#e0f2fe;">
+                <div class="panel-title"><i class="fas fa-truck"></i> ارسال</div>
+                <div style="font-size:12px;line-height:2;">
+                    <div>شرکت: @Model.ShippingCompany</div>
+                    <div>کد رهگیری: <code dir="ltr">@Model.TrackingNumber</code></div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const orderId = @Model.Id;
+        function token() { return $('input[name="__RequestVerificationToken"]').val() || ''; }
+
+        async function doAction(action) {
+            if (!confirm('مطمئن؟')) return;
+            const fd = new FormData(); fd.append('id', orderId); fd.append('__RequestVerificationToken', token());
+            const res = await fetch('/admin/orders/' + action, { method: 'POST', body: fd }).then(r => r.json());
+            showToast(res.message, res.success ? 'success' : 'error');
+            if (res.success) setTimeout(() => location.reload(), 800);
+        }
+        async function doPack() {
+            const note = prompt('یادداشت بسته‌بندی:') || '';
+            const fd = new FormData(); fd.append('id', orderId); fd.append('note', note); fd.append('__RequestVerificationToken', token());
+            const res = await fetch('/admin/orders/markpacked', { method: 'POST', body: fd }).then(r => r.json());
+            showToast(res.message, res.success ? 'success' : 'error');
+            if (res.success) setTimeout(() => location.reload(), 800);
+        }
+        async function doShip() {
+            const company = prompt('شرکت حمل‌ونقل:'); if (!company) return;
+            const tracking = prompt('کد رهگیری:'); if (!tracking) return;
+            const fd = new FormData();
+            fd.append('OrderId', orderId);
+            fd.append('ShippingCompany', company);
+            fd.append('TrackingNumber', tracking);
+            fd.append('__RequestVerificationToken', token());
+            const res = await fetch('/admin/orders/ship', { method: 'POST', body: fd }).then(r => r.json());
+            showToast(res.message, res.success ? 'success' : 'error');
+            if (res.success) setTimeout(() => location.reload(), 800);
+        }
+        async function doCancel() {
+            const reason = prompt('دلیل لغو:'); if (!reason) return;
+            const fd = new FormData(); fd.append('OrderId', orderId); fd.append('Reason', reason); fd.append('__RequestVerificationToken', token());
+            const res = await fetch('/admin/orders/cancel', { method: 'POST', body: fd }).then(r => r.json());
+            showToast(res.message, res.success ? 'success' : 'error');
+            if (res.success) setTimeout(() => location.reload(), 800);
+        }
+    </script>
+}

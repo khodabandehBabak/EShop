@@ -1,0 +1,9 @@
+﻿@model RoleCreateDto
+@{
+    ViewData["Title"] = "نقش جدید";
+}
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <partial name="_Form" model="Model" />
+</form>
+

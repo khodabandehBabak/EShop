@@ -1,0 +1,56 @@
+﻿@model AppUser
+@{
+    ViewData["Title"] = "پروفایل";
+}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="panel">
+        <div class="panel-title"><i class="fas fa-user"></i> اطلاعات شخصی</div>
+        <form asp-action="Update" method="post">
+            @Html.AntiForgeryToken()
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div>
+                    <div class="form-label">نام</div>
+                    <input name="firstName" value="@Model.FirstName" class="form-control" />
+                </div>
+                <div>
+                    <div class="form-label">نام خانوادگی</div>
+                    <input name="lastName" value="@Model.LastName" class="form-control" />
+                </div>
+            </div>
+            <div style="margin-bottom:12px;">
+                <div class="form-label">کد ملی</div>
+                <input name="nationalCode" value="@Model.NationalCode" class="form-control" />
+            </div>
+            <div style="margin-bottom:12px;">
+                <div class="form-label">ایمیل</div>
+                <input name="email" value="@Model.Email" class="form-control" dir="ltr" />
+            </div>
+            <div style="margin-bottom:12px;">
+                <div class="form-label">موبایل</div>
+                <input value="@Model.PhoneNumber" class="form-control" dir="ltr" disabled />
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ذخیره</button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title"><i class="fas fa-lock"></i> تغییر رمز</div>
+        <form asp-action="ChangePassword" method="post">
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:12px;">
+                <div class="form-label">رمز فعلی</div>
+                <input name="currentPassword" type="password" class="form-control" required />
+            </div>
+            <div style="margin-bottom:12px;">
+                <div class="form-label">رمز جدید</div>
+                <input name="newPassword" type="password" class="form-control" required minlength="6" />
+            </div>
+            <div style="margin-bottom:12px;">
+                <div class="form-label">تکرار رمز</div>
+                <input name="confirmPassword" type="password" class="form-control" required minlength="6" />
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-key"></i> تغییر</button>
+        </form>
+    </div>
+</div>

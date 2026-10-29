@@ -1,0 +1,10 @@
+﻿@model ProductEditDto
+@{
+    ViewData["Title"] = "ویرایش محصول";
+}
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <partial name="_Form" model="Model" />
+</form>
+<partial name="_ValidationScriptsPartial" />

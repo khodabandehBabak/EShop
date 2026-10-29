@@ -1,0 +1,57 @@
+﻿@model List<RoleListItemDto>
+@{
+    ViewData["Title"] = "مدیریت نقش‌ها";
+}
+
+<div class="panel">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:15px;font-weight:700;">نقش‌ها (@Model.Count)</h2>
+        <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> نقش جدید</a>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;">
+        @foreach (var r in Model)
+        {
+            <div id="card-@r.Id" style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#fff;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                    <strong style="font-size:14px;">@r.Name</strong>
+                    @if (r.IsSystemRole)
+                    {
+                        <span style="background:#fff3e0;color:var(--warning);padding:1px 8px;border-radius:8px;font-size:10px;">سیستمی</span>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(r.Description))
+                {
+                    <p style="font-size:11px;color:var(--gray);margin-bottom:8px;">@r.Description</p>
+                }
+                <div style="display:flex;gap:6px;margin-bottom:10px;font-size:11px;color:var(--gray);">
+                    <span><i class="fas fa-users"></i> @r.UserCount</span>
+                    <span><i class="fas fa-key"></i> @r.PermissionCount</span>
+                </div>
+                <div style="display:flex;gap:4px;">
+                    <a asp-action="Edit" asp-route-id="@r.Id" class="btn btn-primary btn-sm" style="flex:1;">
+                        <i class="fas fa-edit"></i> ویرایش
+                    </a>
+                    @if (!r.IsSystemRole)
+                    {
+                        <button onclick="del(@r.Id)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function del(id) {
+            if (!confirm('حذف شود؟')) return;
+            fetch('/admin/roles/delete/' + id, { method: 'POST',
+                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || '' }
+            }).then(r => r.json()).then(res => {
+                if (res.success) { document.getElementById('card-' + id)?.remove(); showToast(res.message); }
+                else showToast(res.message, 'error');
+            });
+        }
+    </script>
+}

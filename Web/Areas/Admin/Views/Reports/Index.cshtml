@@ -1,0 +1,238 @@
+﻿@using System.Text.Json
+@model SalesReportDto
+@{
+    ViewData["Title"] = "گزارشات فروش";
+    var periods = new[]
+    {
+        (P: ReportPeriod.Today,       L: "امروز"),
+        (P: ReportPeriod.Yesterday,   L: "دیروز"),
+        (P: ReportPeriod.Last7Days,   L: "۷ روز اخیر"),
+        (P: ReportPeriod.Last30Days,  L: "۳۰ روز اخیر"),
+        (P: ReportPeriod.ThisMonth,   L: "این ماه"),
+        (P: ReportPeriod.LastMonth,   L: "ماه گذشته"),
+        (P: ReportPeriod.Last3Months, L: "۳ ماه اخیر"),
+        (P: ReportPeriod.ThisYear,    L: "امسال"),
+    };
+}
+
+<div class="panel">
+    <!-- Period Tabs -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;background:var(--light);padding:8px;border-radius:10px;">
+        @foreach (var p in periods)
+        {
+            <a href="?period=@p.P"
+               style="padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;
+                          text-decoration:none;
+                          background:@(Model.Filter.Period == p.P ? "var(--primary)" : "transparent");
+                          color:@(Model.Filter.Period == p.P ? "#fff" : "var(--gray)");">
+                @p.L
+            </a>
+        }
+    </div>
+
+    <!-- Date Range -->
+    <div style="padding:10px 14px;background:var(--light);border-radius:8px;margin-bottom:20px;
+                display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;">
+        <i class="fas fa-calendar" style="color:var(--primary);"></i>
+        <span style="color:var(--gray);">از:</span>
+        <strong>@Model.From.ToString("yyyy/MM/dd")</strong>
+        <span style="color:var(--gray);">تا:</span>
+        <strong>@Model.To.ToString("yyyy/MM/dd")</strong>
+    </div>
+
+    <!-- KPI Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">
+        <div style="background:#e8f8f0;border-radius:12px;padding:16px;">
+            <div style="font-size:11px;color:#047857;">درآمد کل</div>
+            <div style="font-size:22px;font-weight:800;color:var(--success);margin-top:4px;">
+                @Model.Summary.TotalRevenue.ToString("N0")
+            </div>
+            <div style="font-size:10px;color:var(--gray);">تومان</div>
+        </div>
+        <div style="background:#e6f4ff;border-radius:12px;padding:16px;">
+            <div style="font-size:11px;color:#0369a1;">سفارشات موفق</div>
+            <div style="font-size:22px;font-weight:800;color:var(--primary);margin-top:4px;">
+                @Model.Summary.PaidOrders
+            </div>
+            <div style="font-size:10px;color:var(--gray);">از @Model.Summary.TotalOrders سفارش</div>
+        </div>
+        <div style="background:#fff3e0;border-radius:12px;padding:16px;">
+            <div style="font-size:11px;color:#92400e;">میانگین سفارش</div>
+            <div style="font-size:18px;font-weight:800;color:var(--warning);margin-top:4px;">
+                @Model.Summary.AverageOrderValue.ToString("N0")
+            </div>
+        </div>
+        <div style="background:#f3e8ff;border-radius:12px;padding:16px;">
+            <div style="font-size:11px;color:#6b21a8;">مشتریان یکتا</div>
+            <div style="font-size:22px;font-weight:800;color:#8e44ad;margin-top:4px;">
+                @Model.Summary.UniqueCustomers
+            </div>
+            <div style="font-size:10px;color:var(--gray);">@Model.Summary.NewCustomers جدید</div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:12px;">
+            <i class="fas fa-chart-line" style="color:var(--primary);"></i> روند فروش
+        </div>
+        <div style="height:280px;position:relative;">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Two columns: Top Products + Top Customers -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-weight:700;font-size:13px;margin-bottom:12px;">
+                <i class="fas fa-cube" style="color:var(--primary);"></i> پرفروش‌ترین محصولات
+            </div>
+            @if (!Model.TopProducts.Any())
+            {
+                <p style="text-align:center;color:var(--gray);padding:20px;">داده‌ای موجود نیست</p>
+            }
+            else
+            {
+                <table class="admin-table" style="font-size:12px;">
+                    <thead>
+                        <tr>
+                            <th style="width:30px;">#</th>
+                            <th>محصول</th>
+                            <th style="text-align:center;">تعداد</th>
+                            <th style="text-align:left;">درآمد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.TopProducts.Count; i++)
+                        {
+                            var p = Model.TopProducts[i];
+                            <tr>
+                                <td>
+                                    <span style="display:inline-flex;align-items:center;justify-content:center;
+                                                         width:22px;height:22px;border-radius:6px;
+                                                         background:@(i < 3 ? "var(--primary)" : "var(--light)");
+                                                         color:@(i < 3 ? "#fff" : "var(--gray)");
+                                                         font-size:10px;font-weight:800;">@(i + 1)</span>
+                                </td>
+                                <td>
+                                    <a href="/product/@p.Slug" target="_blank"
+                                       style="color:var(--dark);text-decoration:none;
+                                                      font-weight:600;font-size:12px;">
+                                        @p.Name
+                                    </a>
+                                </td>
+                                <td style="text-align:center;color:var(--primary);font-weight:700;">
+                                    @p.QuantitySold
+                                </td>
+                                <td style="text-align:left;color:var(--success);font-weight:700;">
+                                    @p.Revenue.ToString("N0")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-weight:700;font-size:13px;margin-bottom:12px;">
+                <i class="fas fa-users" style="color:var(--success);"></i> مشتریان برتر
+            </div>
+            @if (!Model.TopCustomers.Any())
+            {
+                <p style="text-align:center;color:var(--gray);padding:20px;">داده‌ای موجود نیست</p>
+            }
+            else
+            {
+                <table class="admin-table" style="font-size:12px;">
+                    <thead>
+                        <tr>
+                            <th style="width:30px;">#</th>
+                            <th>مشتری</th>
+                            <th style="text-align:center;">سفارش</th>
+                            <th style="text-align:left;">مجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.TopCustomers.Count; i++)
+                        {
+                            var c = Model.TopCustomers[i];
+                            <tr>
+                                <td>
+                                    <span style="display:inline-flex;align-items:center;justify-content:center;
+                                                         width:22px;height:22px;border-radius:6px;
+                                                         background:@(i < 3 ? "var(--success)" : "var(--light)");
+                                                         color:@(i < 3 ? "#fff" : "var(--gray)");
+                                                         font-size:10px;font-weight:800;">@(i + 1)</span>
+                                </td>
+                                <td>
+                                    <div style="font-weight:600;font-size:12px;">@c.FullName</div>
+                                    <div style="font-size:10px;color:var(--gray);" dir="ltr">@c.PhoneNumber</div>
+                                </td>
+                                <td style="text-align:center;color:var(--primary);font-weight:700;">
+                                    @c.OrderCount
+                                </td>
+                                <td style="text-align:left;color:var(--success);font-weight:700;">
+                                    @c.TotalSpent.ToString("N0")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        Chart.defaults.font.family = 'Vazirmatn, Tahoma, sans-serif';
+        Chart.defaults.font.size = 11;
+        Chart.defaults.color = '#64748b';
+
+        const timeline = @Html.Raw(JsonSerializer.Serialize(Model.SalesTimeline));
+
+        new Chart(document.getElementById('salesChart'), {
+            type: 'line',
+            data: {
+                labels: timeline.map(t => t.label),
+                datasets: [
+                    {
+                        label: 'درآمد (تومان)',
+                        data: timeline.map(t => t.value),
+                        borderColor: '#0088cc',
+                        backgroundColor: 'rgba(0,136,204,0.1)',
+                        fill: true,
+                        tension: 0.35,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'تعداد سفارش',
+                        data: timeline.map(t => t.count),
+                        borderColor: '#00b16b',
+                        borderDash: [5, 5],
+                        tension: 0.35,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true, padding: 12 } }
+                },
+                scales: {
+                    y: {
+                        position: 'right', beginAtZero: true,
+                        ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'K' : v }
+                    },
+                    y1: { position: 'left', beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+}

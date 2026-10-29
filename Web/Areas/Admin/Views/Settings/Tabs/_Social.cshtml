@@ -1,0 +1,49 @@
+﻿@model SocialSettingsDto
+
+<form asp-action="SaveSocial" method="post">
+    @Html.AntiForgeryToken()
+
+    <p style="color:var(--gray);font-size:12px;margin-bottom:16px;">
+        لینک‌ها در فوتر نمایش داده می‌شوند. موارد خالی نمایش داده نمی‌شوند.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div>
+            <div class="form-label"><i class="fab fa-instagram" style="color:#cc0001;"></i> اینستاگرام</div>
+            <input asp-for="Instagram" class="form-control" dir="ltr" maxlength="300"
+                   placeholder="https://instagram.com/yourpage" />
+        </div>
+        <div>
+            <div class="form-label"><i class="fab fa-telegram" style="color:#0088cc;"></i> تلگرام</div>
+            <input asp-for="Telegram" class="form-control" dir="ltr" maxlength="300"
+                   placeholder="https://t.me/yourchannel" />
+        </div>
+        <div>
+            <div class="form-label"><i class="fab fa-facebook" style="color:#1b4f9b;"></i> فیسبوک</div>
+            <input asp-for="Facebook" class="form-control" dir="ltr" maxlength="300" />
+        </div>
+        <div>
+            <div class="form-label"><i class="fab fa-twitter" style="color:#1da1f2;"></i> توییتر / X</div>
+            <input asp-for="Twitter" class="form-control" dir="ltr" maxlength="300" />
+        </div>
+        <div>
+            <div class="form-label"><i class="fab fa-youtube" style="color:#ff0000;"></i> یوتیوب</div>
+            <input asp-for="Youtube" class="form-control" dir="ltr" maxlength="300" />
+        </div>
+        <div>
+            <div class="form-label"><i class="fab fa-linkedin" style="color:#0073b2;"></i> لینکدین</div>
+            <input asp-for="Linkedin" class="form-control" dir="ltr" maxlength="300" />
+        </div>
+        <div>
+            <div class="form-label"><i class="fab fa-whatsapp" style="color:#25d366;"></i> واتساپ</div>
+            <input asp-for="Whatsapp" class="form-control" dir="ltr" maxlength="300"
+                   placeholder="https://wa.me/98912xxxxxxx" />
+        </div>
+        <div>
+            <div class="form-label"><i class="fas fa-video" style="color:#ed145b;"></i> آپارات</div>
+            <input asp-for="Aparat" class="form-control" dir="ltr" maxlength="300" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ذخیره</button>
+</form>

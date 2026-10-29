@@ -1,0 +1,24 @@
+﻿@model List<PermissionGroupDto>
+@{
+    ViewData["Title"] = "لیست مجوزها";
+}
+
+<div class="panel">
+    @foreach (var g in Model)
+    {
+        <div style="margin-bottom:16px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <div style="padding:10px 14px;background:var(--light);font-weight:700;font-size:13px;">
+                @g.Group (@g.Permissions.Count)
+            </div>
+            <div style="padding:12px;">
+                @foreach (var p in g.Permissions)
+                {
+                    <div style="padding:6px 0;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;">
+                        <span style="font-size:12px;">@p.Name</span>
+                        <code style="font-size:10px;color:var(--gray);" dir="ltr">@p.Code</code>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

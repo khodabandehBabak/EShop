@@ -1,0 +1,64 @@
+﻿@model SiteSettingsVm
+@{
+    ViewData["Title"] = "تنظیمات سایت";
+    var activeTab = (ViewBag.ActiveTab as string) ?? "general";
+    var tabs = new[]
+    {
+        (Key: "general",  Label: "عمومی",           Icon: "fas fa-cog"),
+        (Key: "branding", Label: "لوگو و برند",      Icon: "fas fa-image"),
+        (Key: "contact",  Label: "تماس",            Icon: "fas fa-phone"),
+        (Key: "social",   Label: "شبکه‌های اجتماعی", Icon: "fas fa-share-alt"),
+        (Key: "shipping", Label: "حمل‌ونقل",         Icon: "fas fa-truck"),
+        (Key: "payment",  Label: "پرداخت",          Icon: "fas fa-wallet"),
+        (Key: "seo",      Label: "سئو",             Icon: "fas fa-search"),
+    };
+}
+
+<div class="panel">
+    <div class="panel-title"><i class="fas fa-cog"></i> تنظیمات سایت</div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;">
+        @foreach (var tab in tabs)
+        {
+            <a href="?tab=@tab.Key"
+               style="display:inline-flex;align-items:center;gap:6px;padding:10px 16px;
+                          font-size:12px;font-weight:600;text-decoration:none;
+                          color:@(activeTab == tab.Key ? "var(--primary)" : "var(--gray)");
+                          border-bottom:3px solid @(activeTab == tab.Key ? "var(--primary)" : "transparent");
+                          margin-bottom:-2px;">
+                <i class="@tab.Icon"></i> @tab.Label
+            </a>
+        }
+    </div>
+
+    @switch (activeTab)
+    {
+        case "general":
+            <partial name="Tabs/_General" model="Model.General" />
+            break;
+        case "branding":
+
+            <partial name="Tabs/_Branding" model="Model.Branding" />
+            break;
+        case "contact":
+
+            <partial name="Tabs/_Contact" model="Model.Contact" />
+            break;
+        case "social":
+
+            <partial name="Tabs/_Social" model="Model.Social" />
+            break;
+        case "shipping":
+
+            <partial name="Tabs/_Shipping" model="Model.Shipping" />
+            break;
+        case "payment":
+
+            <partial name="Tabs/_Payment" model="Model.Payment" />
+            break;
+        case "seo":
+
+            <partial name="Tabs/_Seo" model="Model.Seo" />
+            break;
+    }
+</div>

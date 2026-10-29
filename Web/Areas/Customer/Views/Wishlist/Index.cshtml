@@ -1,0 +1,58 @@
+﻿@model List<WishlistItem>
+@{
+    ViewData["Title"] = "علاقه‌مندی‌ها";
+}
+
+<div class="panel">
+    <div class="panel-title"><i class="fas fa-heart"></i> علاقه‌مندی‌ها (@Model.Count)</div>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align:center;padding:50px;color:var(--gray);">
+            <i class="fas fa-heart" style="font-size:60px;opacity:.3;"></i>
+            <p style="margin-top:12px;">لیست خالی است</p>
+            <a href="/shop" class="btn btn-primary" style="margin-top:12px;">مشاهده محصولات</a>
+        </div>
+    }
+    else
+    {
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;">
+            @foreach (var w in Model)
+            {
+                var p = w.Product;
+                var img = p.Images.OrderBy(i => i.DisplayOrder).FirstOrDefault()?.Path;
+                <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;">
+                    <a href="/product/@p.Slug">
+                        @if (!string.IsNullOrEmpty(img))
+                        {
+                            <img src="@img" style="width:100%;height:150px;object-fit:cover;" />
+                        }
+                    </a>
+                    <div style="padding:10px;">
+                        <a href="/product/@p.Slug" style="font-weight:600;font-size:12px;color:var(--dark);">@p.Name</a>
+                        <div style="display:flex;justify-content:space-between;margin-top:8px;">
+                            <span style="font-weight:700;color:var(--success);font-size:12px;">
+                                @((p.DiscountPrice ?? p.Price).ToString("N0"))
+                            </span>
+                            <button onclick="toggle(@p.Id)" style="background:none;border:none;color:var(--danger);cursor:pointer;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        async function toggle(productId) {
+            const fd = new FormData();
+            fd.append('productId', productId);
+            fd.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val() || '');
+            const res = await fetch('/customer/wishlist/toggle', { method: 'POST', body: fd }).then(r => r.json());
+            if (res.success) location.reload();
+        }
+    </script>
+}

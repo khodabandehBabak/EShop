@@ -1,0 +1,551 @@
+﻿@model ProductDetailDto
+@{
+    var reviews = ViewData["ReviewsPage"] as ReviewPageDto;
+    var related = ViewBag.RelatedProducts as List<ProductCardDto> ?? new();
+    var activePrice = Model.DiscountPrice ?? Model.Price;
+    var variantsJson = JsonSerializer.Serialize(Model.Variants);
+}
+
+<div class="container" style="padding:20px;">
+    <!-- Breadcrumb -->
+    <div style="font-size:12px;color:var(--gray);margin-bottom:20px;">
+        <a href="/" style="color:var(--gray);">خانه</a>
+        <span style="margin:0 6px;">/</span>
+        <a href="/category/@Model.CategorySlug" style="color:var(--gray);">@Model.CategoryName</a>
+        <span style="margin:0 6px;">/</span>
+        <span style="color:var(--dark);font-weight:600;">@Model.Name</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:40px;">
+        <!-- GALLERY -->
+        <div>
+            <div id="mainImage" style="aspect-ratio:1/1;background:#f8f9fa;
+                        border-radius:12px;overflow:hidden;margin-bottom:12px;">
+                @if (Model.Images.Any())
+                {
+                    <img src="@Model.Images[0].Path" alt="@Model.Name"
+                         id="mainImg" style="width:100%;height:100%;object-fit:contain;" />
+                }
+                else
+                {
+                    <div style="display:flex;align-items:center;justify-content:center;
+                                    height:100%;color:var(--border);font-size:80px;">
+                        <i class="fas fa-image"></i>
+                    </div>
+                }
+            </div>
+            @if (Model.Images.Count > 1)
+            {
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    @for (int i = 0; i < Model.Images.Count; i++)
+                    {
+                        <div class="thumb @(i == 0 ? "active" : "")" onclick="changeImage(this, '@Model.Images[i].Path')">
+                            <img src="@Model.Images[i].Path" alt="" />
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- INFO -->
+        <div>
+            <h1 style="font-size:22px;font-weight:800;color:var(--dark);margin-bottom:12px;">
+                @Model.Name
+            </h1>
+
+            <div style="display:flex;gap:16px;font-size:12px;color:var(--gray);
+                        margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+                @if (Model.ReviewCount > 0)
+                {
+                    <span>
+                        <i class="fas fa-star" style="color:#ffc107;"></i>
+                        @(Model.AvgRating?.ToString("0.0") ?? "0") (@Model.ReviewCount نظر)
+                    </span>
+                }
+                @if (!string.IsNullOrEmpty(Model.BrandName))
+                {
+                    <span>برند: <a href="/brand/@Model.BrandSlug" style="color:var(--primary);">@Model.BrandName</a></span>
+                }
+            </div>
+
+            <!-- PRICE -->
+            <div id="priceBlock" style="padding:18px;background:#f8fafc;border-radius:10px;margin-bottom:20px;">
+                @if (Model.DiscountPrice.HasValue)
+                {
+                    <div style="display:flex;align-items:baseline;gap:10px;">
+                        <span id="priceCurrent" style="font-size:28px;font-weight:800;color:var(--success);">
+                            @Model.DiscountPrice.Value.ToString("N0") <small style="font-size:12px;">تومان</small>
+                        </span>
+                        <span id="priceOld" style="font-size:15px;color:var(--gray);text-decoration:line-through;">
+                            @Model.Price.ToString("N0")
+                        </span>
+                        <span id="priceDiscount" style="background:var(--danger);color:#fff;
+                                    font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;">
+                            @Model.DiscountPercent% تخفیف
+                        </span>
+                    </div>
+                }
+                else
+                {
+                    <span id="priceCurrent" style="font-size:28px;font-weight:800;color:var(--dark);">
+                        @Model.Price.ToString("N0") <small style="font-size:12px;">تومان</small>
+                    </span>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.ShortDescription))
+            {
+                <div style="font-size:13px;line-height:1.9;color:#475569;margin-bottom:20px;">
+                    @Model.ShortDescription
+                </div>
+            }
+
+            <!-- VARIANT SELECTOR -->
+            @if (Model.HasVariants && Model.AttributeGroups.Any())
+            {
+                <div id="variantSelector">
+                    @foreach (var group in Model.AttributeGroups)
+                    {
+                        <div class="variant-group" data-attribute-id="@group.AttributeId" style="margin-bottom:16px;">
+                            <div style="font-size:13px;font-weight:700;margin-bottom:8px;">
+                                @group.Name: <span class="selected-label" data-for="@group.AttributeId"
+                                                   style="color:var(--primary);font-weight:600;">انتخاب کنید</span>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                @foreach (var opt in group.Options)
+                                {
+                                    @if (group.Type == AttributeType.Color && !string.IsNullOrEmpty(opt.ColorCode))
+                                    {
+                                        <div class="variant-color"
+                                             data-attribute-id="@group.AttributeId"
+                                             data-option-id="@opt.OptionId"
+                                             data-option-value="@opt.Value"
+                                             style="background-color:@opt.ColorCode;"
+                                             title="@opt.Value"></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="variant-text"
+                                             data-attribute-id="@group.AttributeId"
+                                             data-option-id="@opt.OptionId"
+                                             data-option-value="@opt.Value">
+                                            @opt.Value
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- ADD TO CART -->
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <div class="qty-selector">
+                    <button onclick="changeQty(-1)"><i class="fas fa-minus"></i></button>
+                    <input type="number" id="qtyInput" value="1" min="1" max="@(Model.Stock > 0 ? Model.Stock : 1)" readonly />
+                    <button onclick="changeQty(1)"><i class="fas fa-plus"></i></button>
+                </div>
+                <button id="addToCartBtn" class="btn btn-primary" style="flex:1;height:48px;font-size:14px;"
+                        data-product-id="@Model.Id"
+                        data-has-variants="@Model.HasVariants.ToString().ToLower()"
+                        @(Model.IsInStock ? "" : "disabled")>
+                    <i class="fas fa-cart-plus"></i>
+                    <span id="addToCartText">
+                        @if (!Model.IsInStock)
+                        {
+                            <text>ناموجود</text>
+                        }
+                        else if (Model.HasVariants)
+                        {
+
+                            <text>ابتدا مشخصات را انتخاب کنید</text>
+                        }
+                        else
+                        {
+
+                            <text>افزودن به سبد</text>
+                        }
+                    </span>
+                </button>
+            </div>
+
+            <!-- STOCK STATUS -->
+            <div id="stockStatus" style="font-size:12px;font-weight:600;color:@(Model.IsInStock ? "var(--success)" : "var(--danger)");">
+                @if (!Model.IsInStock)
+                {
+                    <span><i class="fas fa-times-circle"></i> ناموجود</span>
+                }
+                else if (Model.IsLowStock)
+                {
+
+                    <span style="color:var(--warning);"><i class="fas fa-exclamation-circle"></i> تنها @Model.Stock عدد باقی مانده</span>
+                }
+                else
+                {
+
+                    <span><i class="fas fa-check-circle"></i> موجود در انبار</span>
+                }
+            </div>
+
+            <input type="hidden" id="selectedVariantId" value="" />
+        </div>
+    </div>
+
+    <!-- TABS: توضیحات / مشخصات / نظرات -->
+    <div style="background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:40px;">
+        <div style="display:flex;border-bottom:1px solid var(--border);overflow-x:auto;">
+            <button class="tab-btn active" onclick="showTab(this, 'desc')">توضیحات</button>
+            @if (Model.Specs.Any())
+            {
+                <button class="tab-btn" onclick="showTab(this, 'specs')">مشخصات</button>
+            }
+            <button class="tab-btn" onclick="showTab(this, 'reviews')">نظرات (@Model.ReviewCount)</button>
+        </div>
+
+        <div class="tab-content active" data-pane="desc" style="padding:24px;">
+            @if (!string.IsNullOrEmpty(Model.FullDescription))
+            {
+                <div style="line-height:2;color:#475569;font-size:14px;">@Html.Raw(Model.FullDescription)</div>
+            }
+            else
+            {
+
+                <p style="color:var(--gray);">توضیحاتی ثبت نشده.</p>
+            }
+        </div>
+
+        @if (Model.Specs.Any())
+        {
+            <div class="tab-content" data-pane="specs" style="padding:24px;display:none;">
+                <table style="width:100%;font-size:13px;">
+                    @foreach (var s in Model.Specs)
+                    {
+                        <tr style="border-bottom:1px solid var(--border);">
+                            <td style="padding:12px 8px;color:var(--gray);font-weight:600;width:30%;">@s.Name</td>
+                            <td style="padding:12px 8px;">@s.Value</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        }
+
+        <div class="tab-content" data-pane="reviews" style="padding:24px;display:none;">
+            @if (reviews != null)
+            {
+                <partial name="Partials/_ReviewsSection" model="reviews" />
+            }
+        </div>
+    </div>
+
+    <!-- RELATED -->
+    @if (related.Any())
+    {
+        <h2 style="font-size:18px;font-weight:800;color:var(--dark);margin-bottom:16px;">
+            <i class="fas fa-th" style="color:var(--primary);"></i> محصولات مشابه
+        </h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+            @foreach (var p in related)
+            {
+                <partial name="~/Views/Home/Partials/_ProductCard.cshtml" model="p" />
+            }
+        </div>
+    }
+</div>
+
+<script id="variants-data" type="application/json">@Html.Raw(variantsJson)</script>
+
+@section Styles {
+    <style>
+        .thumb {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+            .thumb img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .thumb.active {
+                border-color: var(--primary);
+            }
+
+        .variant-color {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid var(--border);
+            cursor: pointer;
+            transition: all .2s;
+            position: relative;
+        }
+
+            .variant-color:hover {
+                transform: scale(1.08);
+            }
+
+            .variant-color.active {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(0,136,204,.15);
+            }
+
+            .variant-color.unavailable {
+                opacity: .3;
+                cursor: not-allowed;
+            }
+
+        .variant-text {
+            padding: 8px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all .2s;
+        }
+
+            .variant-text:hover {
+                border-color: var(--primary);
+                color: var(--primary);
+            }
+
+            .variant-text.active {
+                border-color: var(--primary);
+                background: #f0f9ff;
+                color: var(--primary);
+            }
+
+            .variant-text.unavailable {
+                background: #f8f9fa;
+                color: var(--border);
+                cursor: not-allowed;
+            }
+
+        .qty-selector {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            height: 48px;
+        }
+
+            .qty-selector button {
+                width: 44px;
+                height: 100%;
+                background: #f8fafc;
+                border: none;
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+                .qty-selector button:hover {
+                    background: var(--border);
+                }
+
+            .qty-selector input {
+                width: 50px;
+                height: 100%;
+                border: none;
+                text-align: center;
+                font-size: 14px;
+                font-weight: 700;
+                font-family: inherit;
+                outline: none;
+            }
+
+        .tab-btn {
+            padding: 14px 24px;
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gray);
+            cursor: pointer;
+            position: relative;
+        }
+
+            .tab-btn.active {
+                color: var(--primary);
+            }
+
+                .tab-btn.active::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    left: 0;
+                    height: 3px;
+                    background: var(--primary);
+                }
+
+        @@media (max-width: 767px) {
+            .container > div[style*="grid-template-columns:1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function changeImage(el, src) {
+            document.getElementById('mainImg').src = src;
+            document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function showTab(btn, name) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(p => p.style.display = 'none');
+            document.querySelector(`.tab-content[data-pane="${name}"]`).style.display = 'block';
+        }
+
+        // Qty
+        const qtyInput = document.getElementById('qtyInput');
+        function changeQty(delta) {
+            let v = parseInt(qtyInput.value) || 1;
+            const max = parseInt(qtyInput.max) || 1;
+            v = Math.max(1, Math.min(max, v + delta));
+            qtyInput.value = v;
+        }
+
+        // Variant selection
+        (function() {
+            const VARIANTS = JSON.parse(document.getElementById('variants-data').textContent);
+            const HAS_VARIANTS = document.getElementById('addToCartBtn')?.dataset.hasVariants === 'true';
+            const selected = {};
+            let currentVariant = null;
+            const btn = document.getElementById('addToCartBtn');
+            const btnText = document.getElementById('addToCartText');
+
+            document.querySelectorAll('[data-option-id]').forEach(el => {
+                el.addEventListener('click', function() {
+                    if (this.classList.contains('unavailable')) return;
+                    const aid = parseInt(this.dataset.attributeId);
+                    const oid = parseInt(this.dataset.optionId);
+
+                    if (selected[aid] === oid) delete selected[aid];
+                    else selected[aid] = oid;
+
+                    document.querySelectorAll(`[data-attribute-id="${aid}"][data-option-id]`)
+                        .forEach(o => o.classList.remove('active'));
+                    if (selected[aid]) this.classList.add('active');
+
+                    const lbl = document.querySelector(`[data-for="${aid}"]`);
+                    if (lbl) lbl.textContent = selected[aid] ? this.dataset.optionValue : 'انتخاب کنید';
+
+                    recalculate();
+                });
+            });
+
+            function findVariant() {
+                const keys = Object.keys(selected);
+                if (!keys.length) return null;
+                return VARIANTS.find(v => {
+                    const vKeys = Object.keys(v.attributeValues);
+                    if (vKeys.length !== keys.length) return false;
+                    return keys.every(k => v.attributeValues[k] == selected[k]);
+                });
+            }
+
+            function recalculate() {
+                const totalAttrs = new Set(
+                    Array.from(document.querySelectorAll('[data-attribute-id][data-option-id]'))
+                        .map(el => el.dataset.attributeId)
+                ).size;
+                if (Object.keys(selected).length < totalAttrs) {
+                    currentVariant = null;
+                    btn.disabled = true;
+                    btnText.textContent = 'ابتدا مشخصات را انتخاب کنید';
+                    return;
+                }
+                currentVariant = findVariant();
+                document.getElementById('selectedVariantId').value = currentVariant?.id ?? '';
+
+                if (!currentVariant) {
+                    btn.disabled = true;
+                    btnText.textContent = 'این ترکیب موجود نیست';
+                    return;
+                }
+
+                // Update price
+                const price = currentVariant.discountPrice ?? currentVariant.price;
+                const priceEl = document.getElementById('priceCurrent');
+                const oldEl = document.getElementById('priceOld');
+                if (priceEl) priceEl.innerHTML = Number(price).toLocaleString('fa-IR') + ' <small style="font-size:12px;">تومان</small>';
+                if (oldEl && currentVariant.discountPrice) {
+                    oldEl.textContent = Number(currentVariant.price).toLocaleString('fa-IR');
+                    oldEl.style.display = '';
+                } else if (oldEl) oldEl.style.display = 'none';
+
+                // Update stock
+                qtyInput.max = Math.max(1, currentVariant.stock);
+                const stockEl = document.getElementById('stockStatus');
+                if (currentVariant.stock === 0) {
+                    btn.disabled = true;
+                    btnText.textContent = 'ناموجود';
+                    stockEl.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-times-circle"></i> ناموجود</span>';
+                } else if (currentVariant.stock <= 5) {
+                    btn.disabled = false;
+                    btnText.textContent = 'افزودن به سبد';
+                    stockEl.innerHTML = `<span style="color:var(--warning);"><i class="fas fa-exclamation-circle"></i> تنها ${currentVariant.stock} عدد باقی مانده</span>`;
+                } else {
+                    btn.disabled = false;
+                    btnText.textContent = 'افزودن به سبد';
+                    stockEl.innerHTML = '<span style="color:var(--success);"><i class="fas fa-check-circle"></i> موجود در انبار</span>';
+                }
+
+                // Update image
+                if (currentVariant.imageUrl) {
+                    document.getElementById('mainImg').src = currentVariant.imageUrl;
+                }
+            }
+
+            if (HAS_VARIANTS) {
+                btnText.textContent = 'ابتدا مشخصات را انتخاب کنید';
+            }
+
+            // Add to cart
+            btn?.addEventListener('click', async function() {
+                const variantId = HAS_VARIANTS ? currentVariant?.id : null;
+                if (HAS_VARIANTS && !variantId) {
+                    showToast('لطفاً مشخصات را انتخاب کنید', 'error');
+                    return;
+                }
+
+                btn.disabled = true;
+                const orig = btnText.textContent;
+                btnText.textContent = 'در حال افزودن...';
+
+                try {
+                    const fd = new FormData();
+                    fd.append('productId', this.dataset.productId);
+                    if (variantId) fd.append('variantId', variantId);
+                    fd.append('quantity', qtyInput.value);
+                    fd.append('__RequestVerificationToken',
+                        document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+                    const res = await fetch('/cart/add', { method: 'POST', body: fd }).then(r => r.json());
+                    if (res.success) {
+                        showToast(res.message, 'success');
+                        const badge = document.getElementById('cartCount');
+                        if (badge) badge.textContent = res.count;
+                    } else showToast(res.message, 'error');
+                } catch { showToast('خطا', 'error'); }
+                finally {
+                    btn.disabled = false;
+                    btnText.textContent = orig;
+                }
+            });
+        })();
+    </script>
+}

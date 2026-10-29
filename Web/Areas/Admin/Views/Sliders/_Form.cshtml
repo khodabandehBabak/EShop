@@ -1,0 +1,71 @@
+﻿@model SliderEditDto
+@{
+    var isEdit = Model.Id > 0;
+}
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+    <div class="panel">
+        <div class="panel-title"><i class="fas fa-images"></i> اطلاعات اسلایدر</div>
+
+        <div class="form-label">عنوان *</div>
+        <input asp-for="Title" class="form-control" required style="margin-bottom:12px;" />
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div><div class="form-label">زیرعنوان</div><input asp-for="Subtitle" class="form-control" /></div>
+            <div>
+                <div class="form-label">موقعیت *</div>
+                <select asp-for="Position" class="form-select">
+                    @foreach (SliderPosition p in Enum.GetValues<SliderPosition>())
+                    {
+                        <option value="@((int)p)">@p</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-label">توضیحات</div>
+        <textarea asp-for="Description" class="form-control" rows="2" style="margin-bottom:12px;"></textarea>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div><div class="form-label">متن دکمه</div><input asp-for="BtnText" class="form-control" /></div>
+            <div><div class="form-label">لینک دکمه</div><input asp-for="BtnLink" class="form-control" dir="ltr" /></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div><div class="form-label">ترتیب</div><input asp-for="DisplayOrder" type="number" class="form-control" /></div>
+            <div><div class="form-label">رنگ پس‌زمینه</div><input asp-for="BgColor" class="form-control" dir="ltr" /></div>
+            <div><div class="form-label">رنگ متن</div><input asp-for="TextColor" class="form-control" dir="ltr" /></div>
+        </div>
+
+        <div style="margin-top:16px;">
+            <label><input asp-for="IsActive" type="checkbox" /> فعال</label>
+        </div>
+    </div>
+
+    <div>
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-image"></i> تصویر اصلی @(isEdit ? "" : "*")</div>
+            @if (!string.IsNullOrEmpty(Model.ExistingImageUrl))
+            {
+                <img src="@Model.ExistingImageUrl" style="width:100%;border-radius:8px;margin-bottom:8px;" />
+            }
+            <input type="file" asp-for="ImageFile" accept="image/*" style="width:100%;" required="@(!isEdit)" />
+        </div>
+
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-cube"></i> تصویر محصول</div>
+            @if (!string.IsNullOrEmpty(Model.ExistingProductImageUrl))
+            {
+                <img src="@Model.ExistingProductImageUrl" style="width:100%;border-radius:8px;margin-bottom:8px;" />
+            }
+            <input type="file" asp-for="ProductImageFile" accept="image/*" style="width:100%;" />
+        </div>
+
+        <div class="panel">
+            <button type="submit" class="btn btn-primary" style="width:100%;height:44px;">
+                <i class="fas fa-save"></i> @(isEdit ? "ذخیره" : "ایجاد")
+            </button>
+            <a asp-action="Index" class="btn btn-outline" style="width:100%;margin-top:8px;text-align:center;">انصراف</a>
+        </div>
+    </div>
+</div>

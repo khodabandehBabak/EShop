@@ -1,0 +1,174 @@
+﻿@inject EShop.Application.Interfaces.ISettingsService Settings
+@{
+    var siteName = await Settings.GetAsync(EShop.Domain.Settings.SettingsKeys.SiteName, "فروشگاه ستارخان");
+    var logoUrl = await Settings.GetAsync(EShop.Domain.Settings.SettingsKeys.LogoUrl);
+    var faviconUrl = await Settings.GetAsync(EShop.Domain.Settings.SettingsKeys.FaviconUrl);
+    var tagline = await Settings.GetAsync(EShop.Domain.Settings.SettingsKeys.SiteTagline);
+    var desc = ViewData["Description"] as string
+        ?? await Settings.GetAsync(EShop.Domain.Settings.SettingsKeys.SeoDefaultDescription, "");
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] | @siteName</title>
+    <meta name="description" content="@desc">
+    <meta property="og:title" content="@ViewData["Title"]" />
+    <meta property="og:description" content="@desc" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")">
+    @if (!string.IsNullOrEmpty(faviconUrl))
+    {
+        <link rel="icon" href="@faviconUrl" />
+    }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/site.css">
+  
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    @Html.AntiForgeryToken()
+
+    <partial name="Partials/_Header" />
+
+    <main class="main">
+        @if (TempData["Success"] != null)
+        {
+            <div class="container">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> @TempData["Success"]
+                </div>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="container">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+                </div>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <partial name="Partials/_Footer" />
+
+    <div id="toastContainer"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script>
+        function showToast(msg, type) {
+            type = type || 'success';
+            const div = document.createElement('div');
+            div.className = 'toast ' + type;
+            div.textContent = msg;
+            document.getElementById('toastContainer').appendChild(div);
+            setTimeout(() => div.remove(), 4000);
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+@* @inject EShop.Application.Interfaces.ISettingsService Settings
+@{
+    var siteName = await Settings.GetAsync(EShop.Domain.Settings.SettingsKeys.SiteName, "فروشگاه ستارخان");
+    var faviconUrl = await Settings.GetAsync(EShop.Domain.Settings.SettingsKeys.FaviconUrl);
+    var desc = ViewData["Description"] as string
+        ?? await Settings.GetAsync(EShop.Domain.Settings.SettingsKeys.SeoDefaultDescription, "");
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+    <title>@ViewData["Title"] | @siteName</title>
+    <meta name="description" content="@desc">
+    <meta property="og:title" content="@ViewData["Title"]" />
+    <meta property="og:description" content="@desc" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="@($"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}")">
+    @if (!string.IsNullOrEmpty(faviconUrl))
+    {
+        <link rel="icon" href="@faviconUrl" />
+    }
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/" asp-append-version="true">
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    @Html.AntiForgeryToken()
+
+    <partial name="Partials/_Header" />
+
+    <main class="main">
+        @if (TempData["Success"] != null)
+        {
+            <div class="container" style="margin-top:12px;">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> @TempData["Success"]
+                </div>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="container" style="margin-top:12px;">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+                </div>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <partial name="Partials/_Footer" />
+    <partial name="Partials/_MobileMenu" />
+    <partial name="Partials/_BottomNav" />
+
+    <div id="toastContainer"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+        function showToast(msg, type) {
+            type = type || 'success';
+            const div = document.createElement('div');
+            div.className = 'toast' + (type === 'error' ? ' error' : '');
+            div.textContent = msg;
+            document.getElementById('toastContainer').appendChild(div);
+            setTimeout(() => div.remove(), 3500);
+        }
+
+        // Mobile drawer
+        window.openDrawer = function () {
+            document.getElementById('mobileDrawer')?.classList.add('open');
+            document.getElementById('drawerBackdrop')?.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        };
+        window.closeDrawer = function () {
+            document.getElementById('mobileDrawer')?.classList.remove('open');
+            document.getElementById('drawerBackdrop')?.classList.remove('open');
+            document.body.style.overflow = '';
+        };
+
+        // Update cart count
+        async function refreshCartCount() {
+            try {
+                const res = await fetch('/cart/count');
+                if (res.ok) {
+                    const count = await res.json();
+                    document.querySelectorAll('.cart-badge').forEach(b => {
+                        b.textContent = count;
+                        b.style.display = count > 0 ? 'flex' : 'none';
+                    });
+                }
+            } catch (e) { /* ignore */ }
+        }
+        refreshCartCount();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html> *@

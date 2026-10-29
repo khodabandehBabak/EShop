@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "ورود / ثبت‌نام";
+    Layout = "_Layout";
+}
+
+<div class="container" style="padding:60px 20px;">
+    <div style="max-width:400px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;
+                box-shadow:0 4px 20px rgba(0,0,0,.06);">
+        <div style="text-align:center;margin-bottom:24px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:#e6f4ff;
+                        color:var(--primary);display:flex;align-items:center;
+                        justify-content:center;font-size:28px;margin:0 auto 12px;">
+                <i class="fas fa-user"></i>
+            </div>
+            <h1 style="font-size:20px;font-weight:800;margin-bottom:6px;">ورود / ثبت‌نام</h1>
+            <p style="color:var(--gray);font-size:12px;">با شماره موبایل خود وارد شوید</p>
+        </div>
+
+        <form method="post" action="/account/requestotp">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+            <div style="margin-bottom:16px;">
+                <label class="form-label">شماره موبایل</label>
+                <input type="tel" name="phoneNumber" placeholder="09xxxxxxxxx"
+                       class="form-control" dir="ltr" maxlength="11" required
+                       pattern="09\d{9}" style="height:48px;font-size:15px;text-align:center;" />
+            </div>
+            <button type="submit" class="btn btn-primary"
+                    style="width:100%;height:48px;font-size:14px;">
+                <i class="fas fa-paper-plane"></i> دریافت کد ورود
+            </button>
+        </form>
+
+        @if (TempData["DevOtp"] != null)
+        {
+            <div style="margin-top:16px;padding:12px;background:#fff3e0;border-radius:8px;
+                            font-size:12px;color:#92400e;">
+                <strong>🔧 حالت توسعه:</strong> کد ورود: <code>@TempData["DevOtp"]</code>
+            </div>
+        }
+
+        <div style="text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+            <a href="/account/adminlogin" style="font-size:12px;color:var(--gray);">
+                ورود مدیران →
+            </a>
+        </div>
+    </div>
+</div>

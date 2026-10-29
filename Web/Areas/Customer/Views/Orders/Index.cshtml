@@ -1,0 +1,65 @@
+﻿@model List<Order>
+@{
+    ViewData["Title"] = "سفارش‌های من";
+}
+
+<div class="panel">
+    <div class="panel-title"><i class="fas fa-shopping-bag"></i> سفارش‌های من (@ViewBag.Total)</div>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align:center;padding:50px 20px;color:var(--gray);">
+            <i class="fas fa-inbox" style="font-size:60px;opacity:.3;"></i>
+            <p style="margin-top:12px;">سفارشی ثبت نکرده‌اید</p>
+            <a href="/" class="btn btn-primary" style="margin-top:12px;">شروع خرید</a>
+        </div>
+    }
+    else
+    {
+        foreach (var o in Model)
+        {
+            <div style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <div style="font-weight:800;font-size:14px;">@o.OrderNumber</div>
+                        <div style="font-size:11px;color:var(--gray);margin-top:2px;">
+                            @o.CreatedAt.ToString("yyyy/MM/dd - HH:mm")
+                        </div>
+                    </div>
+                    <span class="status-badge status-@o.Status.ToString().ToLower()">
+                        @GetStatusLabel(o.Status)
+                    </span>
+                </div>
+
+                <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);
+                                    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                    <div style="font-weight:800;color:var(--success);">
+                        @o.TotalAmount.ToString("N0") تومان
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <a asp-action="Detail" asp-route-id="@o.Id" class="btn btn-outline btn-sm">
+                            <i class="fas fa-eye"></i> جزئیات
+                        </a>
+                        <a asp-action="Track" asp-route-id="@o.Id" class="btn btn-primary btn-sm">
+                            <i class="fas fa-map-marker-alt"></i> پیگیری
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@functions {
+    string GetStatusLabel(OrderStatus s) => s switch
+    {
+        OrderStatus.Pending => "در انتظار پرداخت",
+        OrderStatus.Paid => "پرداخت شده",
+        OrderStatus.Processing => "در حال پردازش",
+        OrderStatus.Packed => "بسته‌بندی شده",
+        OrderStatus.Shipped => "ارسال شده",
+        OrderStatus.Delivered => "تحویل شده",
+        OrderStatus.Cancelled => "لغو شده",
+        _ => s.ToString()
+    };
+}

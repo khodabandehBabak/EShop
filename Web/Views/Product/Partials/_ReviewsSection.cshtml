@@ -1,0 +1,206 @@
+﻿@model ReviewPageDto
+@{
+    var isLoggedIn = Model.IsLoggedIn;
+}
+
+<div>
+    @if (!Model.Items.Any())
+    {
+        <div style="text-align:center;padding:40px;color:var(--gray);">
+            <i class="fas fa-comments" style="font-size:48px;opacity:.3;"></i>
+            <p style="margin-top:12px;">هنوز نظری ثبت نشده</p>
+        </div>
+    }
+    else
+    {
+        <div style="display:grid;grid-template-columns:200px 1fr;gap:24px;margin-bottom:24px;">
+            <div style="text-align:center;padding:16px;background:#f8fafc;border-radius:10px;">
+                <div style="font-size:40px;font-weight:800;color:var(--dark);">
+                    @(Model.AvgRating?.ToString("0.0") ?? "0")
+                </div>
+                <div style="color:#ffc107;font-size:20px;margin:6px 0;">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="fas fa-star" style="opacity:@(i <= (Model.AvgRating ?? 0) ? 1 : .2);"></i>
+                    }
+                </div>
+                <div style="font-size:12px;color:var(--gray);">از @Model.TotalCount نظر</div>
+            </div>
+            <div>
+                @{
+                    var bars = new[] {
+                        (5, Model.Rating5Count), (4, Model.Rating4Count), (3, Model.Rating3Count),
+                        (2, Model.Rating2Count), (1, Model.Rating1Count)
+                        };
+                    var total = Math.Max(1, Model.TotalCount);
+                }
+                @foreach (var (stars, count) in bars)
+                {
+                    var pct = (int)(count * 100.0 / total);
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                        <span style="width:44px;font-size:11px;color:var(--gray);">@stars ★</span>
+                        <div style="flex:1;height:7px;background:#f0f0f0;border-radius:4px;overflow:hidden;">
+                            <div style="height:100%;background:#ffc107;width:@(pct)%;"></div>
+                        </div>
+                        <span style="width:30px;font-size:11px;color:var(--gray);text-align:left;">@count</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @foreach (var r in Model.Items)
+        {
+            <div style="padding:16px 0;border-top:1px solid var(--border);">
+                <div style="display:flex;gap:12px;">
+                    <div style="width:44px;height:44px;border-radius:50%;flex-shrink:0;
+                                        background:linear-gradient(135deg,var(--primary),#00a0f0);
+                                        color:#fff;display:flex;align-items:center;
+                                        justify-content:center;font-weight:800;">
+                        @r.UserFullName.Substring(0, 1)
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+                            <div>
+                                <strong style="font-size:13px;">@r.UserFullName</strong>
+                                @if (r.IsVerifiedPurchase)
+                                {
+                                    <span style="background:#e8f8f0;color:var(--success);font-size:10px;
+                                                             padding:2px 8px;border-radius:8px;font-weight:600;margin-right:6px;">
+                                        <i class="fas fa-check"></i> خرید تأییدشده
+                                    </span>
+                                }
+                            </div>
+                            <span style="font-size:11px;color:var(--gray);">@r.CreatedAt.ToString("yyyy/MM/dd")</span>
+                        </div>
+                        <div style="color:#ffc107;font-size:12px;margin:4px 0;">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star" style="opacity:@(i <= r.Rating ? 1 : .2);"></i>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(r.Title))
+                        {
+                            <div style="font-weight:700;margin:6px 0;">@r.Title</div>
+                        }
+                        @if (!string.IsNullOrEmpty(r.Comment))
+                        {
+                            <p style="font-size:13px;line-height:1.8;color:#475569;margin:6px 0;">@r.Comment</p>
+                        }
+                        @if (isLoggedIn && !r.IsOwnReview)
+                        {
+                            <div style="display:flex;gap:8px;margin-top:8px;">
+                                <button onclick="voteReview(@r.Id, true)" class="vote-btn @(r.CurrentUserVote == "helpful" ? "active" : "")">
+                                    <i class="fas fa-thumbs-up"></i> مفید (@r.HelpfulCount)
+                                </button>
+                                <button onclick="voteReview(@r.Id, false)" class="vote-btn @(r.CurrentUserVote == "nothelpful" ? "active" : "")">
+                                    <i class="fas fa-thumbs-down"></i> غیرمفید (@r.NotHelpfulCount)
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (isLoggedIn && Model.CanSubmitReview)
+        {
+            <div style="margin-top:24px;padding:20px;background:#f8fafc;border-radius:10px;">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">ثبت نظر شما</h3>
+                <form id="reviewForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ProductId" value="@Model.ProductId" />
+                    <input type="hidden" name="Rating" id="ratingInput" value="5" />
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:600;font-size:12px;display:block;margin-bottom:6px;">امتیاز:</label>
+                        <div id="starSelect" style="font-size:24px;color:#ffc107;cursor:pointer;user-select:none;">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span data-val="@i">★</span>
+                            }
+                        </div>
+                    </div>
+                    <input name="Title" placeholder="عنوان (اختیاری)" class="form-control" style="margin-bottom:10px;" maxlength="100" />
+                    <textarea name="Comment" placeholder="نظر شما..." rows="3" class="form-control"
+                      style="margin-bottom:12px;" maxlength="2000"></textarea>
+                    <button type="submit" class="btn btn-primary">ثبت نظر</button>
+                </form>
+            </div>
+        }
+        else if (!isLoggedIn)
+        {
+            <div style="margin-top:24px;padding:16px;background:#f0f9ff;border-radius:10px;text-align:center;">
+                <p style="font-size:13px;color:var(--gray);">برای ثبت نظر ابتدا وارد شوید</p>
+                <a href="/account/login" class="btn btn-primary btn-sm">ورود / ثبت‌نام</a>
+            </div>
+        }
+        else if (Model.HasAlreadyReviewed)
+        {
+            <div style="margin-top:24px;padding:16px;background:#e8f8f0;border-radius:10px;">
+                <p style="color:#059669;font-size:13px;">
+                    <i class="fas fa-check-circle"></i> شما قبلاً نظر داده‌اید.
+                </p>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .vote-btn {
+        background: #f8fafc;
+        color: var(--gray);
+        border: 1px solid var(--border);
+        padding: 5px 12px;
+        border-radius: 16px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-family: inherit;
+    }
+
+        .vote-btn.active {
+            background: #e8f8f0;
+            color: var(--success);
+            border-color: #a7f3d0;
+        }
+</style>
+
+<script>
+    // Star selector
+    (function() {
+        const stars = document.querySelectorAll('#starSelect span');
+        const input = document.getElementById('ratingInput');
+        stars.forEach((s, i) => {
+            s.addEventListener('click', () => {
+                input.value = i + 1;
+                stars.forEach((s2, j) => s2.style.opacity = j <= i ? '1' : '.3');
+            });
+        });
+        stars.forEach((s, i) => s.style.opacity = '1');
+    })();
+
+    document.getElementById('reviewForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fd = new FormData(this);
+        try {
+            const res = await fetch('/review/submit', { method: 'POST', body: fd }).then(r => r.json());
+            showToast(res.message, res.success ? 'success' : 'error');
+            if (res.success) setTimeout(() => location.reload(), 1000);
+        } catch { showToast('خطا', 'error'); }
+    });
+
+    async function voteReview(id, isHelpful) {
+        const fd = new FormData();
+        fd.append('reviewId', id);
+        fd.append('isHelpful', isHelpful);
+        fd.append('__RequestVerificationToken',
+            document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+        try {
+            const res = await fetch('/review/vote', { method: 'POST', body: fd }).then(r => r.json());
+            if (res.success) location.reload();
+            else showToast(res.message, 'error');
+        } catch { showToast('خطا', 'error'); }
+    }
+</script>

@@ -1,0 +1,42 @@
+﻿@model ContactSettingsDto
+
+<form asp-action="SaveContact" method="post">
+    @Html.AntiForgeryToken()
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+            <div class="form-label">تلفن ثابت</div>
+            <input asp-for="Phone" class="form-control" dir="ltr" maxlength="30" placeholder="021-12345678" />
+        </div>
+        <div>
+            <div class="form-label">موبایل / واتساپ</div>
+            <input asp-for="Mobile" class="form-control" dir="ltr" maxlength="11" placeholder="09xxxxxxxxx" />
+        </div>
+        <div>
+            <div class="form-label">ایمیل</div>
+            <input asp-for="Email" class="form-control" dir="ltr" type="email" />
+        </div>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <div class="form-label">آدرس</div>
+        <textarea asp-for="Address" class="form-control" rows="2" maxlength="500"></textarea>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div>
+            <div class="form-label">کد پستی</div>
+            <input asp-for="PostalCode" class="form-control" dir="ltr" maxlength="20" />
+        </div>
+        <div>
+            <div class="form-label">ساعات کاری</div>
+            <input asp-for="WorkHours" class="form-control" maxlength="200" />
+        </div>
+        <div>
+            <div class="form-label">لینک نقشه</div>
+            <input asp-for="MapUrl" class="form-control" dir="ltr" maxlength="500" placeholder="https://..." />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ذخیره</button>
+</form>

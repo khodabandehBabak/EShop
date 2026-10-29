@@ -1,0 +1,45 @@
+﻿@model ShippingSettingsDto
+
+<form asp-action="SaveShipping" method="post">
+    @Html.AntiForgeryToken()
+
+    <div style="padding:14px;background:#fff3e0;border-radius:10px;margin-bottom:16px;">
+        <div class="form-label" style="color:#92400e;">
+            <i class="fas fa-info-circle"></i> آستانه ارسال رایگان
+        </div>
+        <input asp-for="FreeThreshold" type="number" class="form-control" min="0" step="100000" />
+        <small style="color:#92400e;font-size:11px;">
+            سفارشات بالای این مبلغ، ارسال عادی رایگان دارند.
+        </small>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+            <div class="form-label">هزینه ارسال عادی</div>
+            <input asp-for="NormalCost" type="number" class="form-control" min="0" step="1000" />
+        </div>
+        <div>
+            <div class="form-label">هزینه ارسال سریع</div>
+            <input asp-for="ExpressCost" type="number" class="form-control" min="0" step="1000" />
+        </div>
+        <div>
+            <div class="form-label">هزینه تحویل حضوری</div>
+            <input asp-for="PickupCost" type="number" class="form-control" min="0" step="1000" />
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div>
+            <div class="form-label">روزهای تحویل عادی</div>
+            <input asp-for="NormalDays" class="form-control" placeholder="۳-۵ روز کاری" />
+        </div>
+        <div>
+            <div class="form-label">شهرهای ارسال سریع</div>
+            <input asp-for="ExpressCities" class="form-control"
+                   placeholder="تهران,کرج,اصفهان,مشهد,شیراز" />
+            <small style="color:var(--gray);font-size:11px;">با کاما جدا کنید</small>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ذخیره</button>
+</form>

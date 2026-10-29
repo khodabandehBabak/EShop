@@ -1,0 +1,64 @@
+﻿@model Order
+@{
+    ViewData["Title"] = "جزئیات سفارش";
+}
+
+<div class="panel">
+    <div class="panel-title"><i class="fas fa-receipt"></i> سفارش @Model.OrderNumber</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div><strong>تاریخ:</strong> @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</div>
+        <div>
+            <strong>وضعیت:</strong>
+            <span class="status-badge status-@Model.Status.ToString().ToLower()">@Model.Status</span>
+        </div>
+        <div><strong>روش پرداخت:</strong> @(Model.PaymentMethod == PaymentMethod.Online ? "آنلاین" : "درب منزل")</div>
+        <div><strong>روش ارسال:</strong> @Model.ShippingMethod</div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-title">آدرس تحویل</div>
+    <div style="font-size:13px;line-height:2;">
+        <div><strong>@Model.ReceiverName</strong> - @Model.ReceiverPhone</div>
+        <div>@Model.Province، @Model.City، @Model.FullAddress</div>
+        <div>کد پستی: @Model.PostalCode</div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-title">اقلام</div>
+    <table style="width:100%;">
+        <thead>
+            <tr style="border-bottom:2px solid var(--border);">
+                <th style="text-align:right;padding:10px;font-size:12px;">محصول</th>
+                <th style="text-align:center;padding:10px;font-size:12px;">تعداد</th>
+                <th style="text-align:left;padding:10px;font-size:12px;">قیمت</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var i in Model.Items)
+            {
+                <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:10px;font-size:13px;">@i.ProductName</td>
+                    <td style="padding:10px;text-align:center;">@i.Quantity</td>
+                    <td style="padding:10px;text-align:left;font-weight:600;">@i.TotalPrice.ToString("N0")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div style="padding-top:12px;margin-top:12px;border-top:2px solid var(--border);text-align:left;">
+        <strong>مبلغ کل: @Model.TotalAmount.ToString("N0") تومان</strong>
+    </div>
+</div>
+
+@if (Model.Status == OrderStatus.Pending)
+{
+    <div class="panel">
+        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('لغو سفارش؟');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> لغو سفارش</button>
+        </form>
+    </div>
+}
+

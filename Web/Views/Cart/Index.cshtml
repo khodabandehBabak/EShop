@@ -1,0 +1,195 @@
+﻿@* @model CheckoutSummaryDto
+
+<div class="container" style="padding:20px;">
+    <h1 style="font-size:22px;font-weight:800;color:var(--dark);margin-bottom:20px;">
+        <i class="fas fa-shopping-cart" style="color:var(--primary);"></i> سبد خرید
+    </h1>
+
+    @if (!Model.Items.Any())
+    {
+        <div style="text-align:center;padding:80px 20px;background:#fff;border-radius:12px;">
+            <i class="fas fa-shopping-cart" style="font-size:64px;color:var(--border);"></i>
+            <h3 style="margin:16px 0 8px;">سبد خرید خالی است</h3>
+            <a href="/shop" class="btn btn-primary" style="margin-top:12px;">شروع خرید</a>
+        </div>
+    }
+    else
+    {
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+            <div class="panel" style="background:#fff;border-radius:12px;padding:20px;">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="cart-item" style="display:flex;gap:16px;padding:16px 0;
+                                        border-bottom:1px solid var(--border);">
+                        <img src="@item.ImageUrl" alt="@item.Name"
+                             style="width:80px;height:80px;object-fit:cover;border-radius:8px;" />
+                        <div style="flex:1;min-width:0;">
+                            <a href="/product/@item.ProductId" style="font-weight:700;font-size:13px;
+                                            color:var(--dark);text-decoration:none;">@item.Name</a>
+                            @if (!string.IsNullOrEmpty(item.VariantDescription))
+                            {
+                                <div style="font-size:11px;color:var(--gray);margin-top:2px;">@item.VariantDescription</div>
+                            }
+                            <div style="font-size:12px;color:var(--gray);margin-top:4px;">
+                                @item.Price.ToString("N0") تومان × @item.Quantity
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+                            <div style="font-weight:800;color:var(--success);">
+                                @item.LineTotal.ToString("N0")
+                            </div>
+                            <button onclick="removeItem(@item.ProductId, @(item.VariantId?.ToString() ?? "null"))"
+                                    style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div style="background:#fff;border-radius:12px;padding:20px;height:fit-content;
+                            position:sticky;top:20px;">
+                <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;padding-bottom:12px;
+                               border-bottom:1px solid var(--border);">
+                    خلاصه سفارش
+                </h3>
+
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px;">
+                    <span>جمع کالاها:</span>
+                    <span style="font-weight:600;">@Model.SubTotal.ToString("N0")</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px;">
+                    <span>هزینه ارسال:</span>
+                    <span style="font-weight:600;color:var(--success);">
+                        @(Model.ShippingCost == 0 ? "رایگان" : Model.ShippingCost.ToString("N0"))
+                    </span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding-top:12px;
+                                margin-top:12px;border-top:2px solid var(--border);
+                                font-size:16px;font-weight:800;">
+                    <span>مبلغ کل:</span>
+                    <span style="color:var(--success);">@Model.TotalAmount.ToString("N0")</span>
+                </div>
+
+                <a href="/checkout" class="btn btn-primary"
+                   style="width:100%;margin-top:16px;height:44px;font-size:14px;">
+                    <i class="fas fa-arrow-left"></i> ادامه سفارش
+                </a>
+                <a href="/shop" class="btn btn-outline" style="width:100%;margin-top:8px;">
+                    ادامه خرید
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    async function removeItem(productId, variantId) {
+        if (!confirm('حذف این کالا از سبد؟')) return;
+        const fd = new FormData();
+        fd.append('productId', productId);
+        if (variantId) fd.append('variantId', variantId);
+        fd.append('__RequestVerificationToken',
+            document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+        const res = await fetch('/cart/remove', { method: 'POST', body: fd }).then(r => r.json());
+        if (res.success) location.reload();
+    }
+</script> *@
+
+@model CheckoutSummaryDto
+
+<div class="container" style="padding-top:16px;">
+    <h1 style="font-size:1.25rem;margin-bottom:20px;">
+        <i class="fas fa-shopping-bag" style="color:var(--primary);"></i> سبد خرید
+    </h1>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-shopping-bag"></i></div>
+            <h3>سبد خرید خالی است</h3>
+            <p>محصولی به سبد اضافه نکرده‌اید</p>
+            <a href="/shop" class="btn btn-primary">
+                <i class="fas fa-store"></i> شروع خرید
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-layout">
+            <div class="card">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="cart-item">
+                        <img src="@item.ImageUrl" alt="@item.Name" class="cart-item-img" loading="lazy" />
+                        <div class="cart-item-info">
+                            <div class="cart-item-title">@item.Name</div>
+                            @if (!string.IsNullOrEmpty(item.VariantDescription))
+                            {
+                                <div class="cart-item-variant">@item.VariantDescription</div>
+                            }
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+                                <div class="cart-item-price">
+                                    @item.Price.ToString("N0") <small style="color:var(--text-3);font-weight:500;">× @item.Quantity</small>
+                                </div>
+                                <button type="button" onclick="removeItem(@item.ProductId, @(item.VariantId?.ToString() ?? "null"))"
+                                        style="color:var(--danger);font-size:12px;font-weight:600;padding:4px 8px;">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="cart-summary">
+                <h3 style="font-size:14px;margin-bottom:14px;padding-bottom:12px;
+                               border-bottom:1px solid var(--border);">
+                    خلاصه سفارش
+                </h3>
+
+                <div class="summary-row">
+                    <span style="color:var(--text-2);">جمع کالاها</span>
+                    <span style="font-weight:600;">@Model.SubTotal.ToString("N0")</span>
+                </div>
+                <div class="summary-row">
+                    <span style="color:var(--text-2);">هزینه ارسال</span>
+                    <span style="font-weight:600;color:var(--success);">
+                        @(Model.ShippingCost == 0 ? "رایگان" : Model.ShippingCost.ToString("N0"))
+                    </span>
+                </div>
+                <div class="summary-row total">
+                    <span>مبلغ کل</span>
+                    <span class="price">@Model.TotalAmount.ToString("N0") تومان</span>
+                </div>
+
+                <a href="/checkout" class="btn btn-primary btn-lg btn-block" style="margin-top:16px;">
+                    <i class="fas fa-lock"></i> ادامه سفارش
+                </a>
+                <a href="/shop" class="btn btn-outline btn-block" style="margin-top:8px;">
+                    ادامه خرید
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        async function removeItem(productId, variantId) {
+            if (!confirm('حذف این کالا؟')) return;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            const fd = new FormData();
+            fd.append('productId', productId);
+            if (variantId) fd.append('variantId', variantId);
+            fd.append('__RequestVerificationToken', token);
+
+            const res = await fetch('/cart/remove', { method: 'POST', body: fd }).then(r => r.json());
+            if (res.success) {
+                location.reload();
+            } else {
+                showToast(res.message || 'خطا', 'error');
+            }
+        }
+    </script>
+}

@@ -1,0 +1,48 @@
+﻿@model SeoSettingsDto
+
+<form asp-action="SaveSeo" method="post">
+    @Html.AntiForgeryToken()
+
+    <div style="margin-bottom:12px;">
+        <div class="form-label">عنوان پیش‌فرض</div>
+        <input asp-for="DefaultTitle" class="form-control" maxlength="70" />
+        <small style="color:var(--gray);font-size:11px;">حداکثر ۷۰ کاراکتر</small>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <div class="form-label">توضیحات پیش‌فرض</div>
+        <textarea asp-for="DefaultDescription" class="form-control" rows="2" maxlength="160"></textarea>
+        <small style="color:var(--gray);font-size:11px;">حداکثر ۱۶۰ کاراکتر</small>
+    </div>
+
+    <div style="margin-bottom:12px;">
+        <div class="form-label">کلمات کلیدی</div>
+        <input asp-for="DefaultKeywords" class="form-control" maxlength="300"
+               placeholder="کلمه1، کلمه2" />
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+            <div class="form-label">Google Analytics ID</div>
+            <input asp-for="GoogleAnalytics" class="form-control" dir="ltr" maxlength="100"
+                   placeholder="G-XXXXXXXXXX" />
+        </div>
+        <div>
+            <div class="form-label">Google Search Console</div>
+            <input asp-for="GoogleSearchConsole" class="form-control" dir="ltr" maxlength="200" />
+        </div>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:8px;padding:12px;background:var(--light);
+                  border-radius:8px;margin-bottom:16px;cursor:pointer;">
+        <input asp-for="RobotsEnabled" type="checkbox" />
+        <div>
+            <strong style="font-size:12px;">اجازه‌ی Index به موتورهای جستجو</strong>
+            <div style="font-size:11px;color:var(--gray);">
+                اگر غیرفعال باشد، robots.txt همه را بلاک می‌کند.
+            </div>
+        </div>
+    </label>
+
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> ذخیره</button>
+</form>

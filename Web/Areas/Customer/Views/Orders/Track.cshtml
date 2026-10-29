@@ -1,0 +1,91 @@
+﻿@model OrderTrackingDto
+@{
+    ViewData["Title"] = "پیگیری سفارش";
+    var steps = new[] {
+        (Step: 1, Label: "پرداخت", Icon: "fas fa-money-bill"),
+        (Step: 2, Label: "پردازش", Icon: "fas fa-tools"),
+        (Step: 3, Label: "بسته‌بندی", Icon: "fas fa-box"),
+        (Step: 4, Label: "ارسال", Icon: "fas fa-truck"),
+        (Step: 5, Label: "تحویل", Icon: "fas fa-check-circle"),
+    };
+    var isCancelled = Model.Status == OrderStatus.Cancelled;
+}
+
+<div class="panel">
+    <div class="panel-title"><i class="fas fa-map-marker-alt"></i> پیگیری سفارش @Model.OrderNumber</div>
+
+    @if (isCancelled)
+    {
+        <div style="text-align:center;padding:40px 20px;background:#fdeaea;border-radius:10px;">
+            <i class="fas fa-times-circle" style="font-size:60px;color:var(--danger);"></i>
+            <h3 style="color:var(--danger);margin:16px 0 6px;">این سفارش لغو شده است</h3>
+        </div>
+    }
+    else
+    {
+        <div style="position:relative;padding:30px 0;margin-bottom:20px;overflow-x:auto;">
+            <div style="position:absolute;top:54px;right:8%;left:8%;height:3px;background:var(--border);"></div>
+            <div style="position:absolute;top:54px;right:8%;height:3px;background:var(--success);
+                            width:@(Model.StatusStep > 0 ? (Model.StatusStep - 1) * 25 : 0)%;"></div>
+            <div style="display:flex;justify-content:space-around;position:relative;">
+                @foreach (var step in steps)
+                {
+                    var done = Model.StatusStep >= step.Step;
+                    <div style="text-align:center;min-width:80px;">
+                        <div style="width:56px;height:56px;border-radius:50%;margin:0 auto 10px;
+                                            background:@(done ? "var(--success)" : "var(--border)");
+                                            color:@(done ? "#fff" : "var(--gray)");
+                                            display:flex;align-items:center;justify-content:center;
+                                            font-size:20px;position:relative;z-index:2;">
+                            <i class="@step.Icon"></i>
+                        </div>
+                        <div style="font-size:12px;font-weight:600;color:@(done ? "var(--dark)" : "var(--gray)");">
+                            @step.Label
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.TrackingNumber))
+        {
+            <div style="padding:16px;background:#e0f2fe;border-radius:10px;margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                    <i class="fas fa-truck" style="font-size:20px;color:#0369a1;"></i>
+                    <strong style="color:#0369a1;">اطلاعات ارسال</strong>
+                </div>
+                <div style="font-size:13px;line-height:1.9;">
+                    <div><strong>شرکت:</strong> @Model.ShippingCompany</div>
+                    <div>
+                        <strong>کد رهگیری:</strong>
+                        <code style="background:#fff;padding:2px 8px;border-radius:4px;" dir="ltr">@Model.TrackingNumber</code>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div style="padding:16px;background:#f8fafc;border-radius:10px;">
+            <h4 style="font-size:13px;font-weight:700;margin-bottom:12px;">تاریخچه</h4>
+            @foreach (var item in Model.Timeline)
+            {
+                <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--border);">
+                    <div style="width:32px;height:32px;border-radius:50%;background:@item.Color;
+                                        color:#fff;display:flex;align-items:center;justify-content:center;
+                                        flex-shrink:0;">
+                        <i class="@item.Icon" style="font-size:12px;"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:600;font-size:13px;">@item.StatusLabel</div>
+                        @if (!string.IsNullOrEmpty(item.Note))
+                        {
+                            <div style="font-size:11px;color:var(--gray);">@item.Note</div>
+                        }
+                        <div style="font-size:10px;color:var(--gray);margin-top:2px;">
+                            @item.ChangedAt.ToString("yyyy/MM/dd HH:mm")
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

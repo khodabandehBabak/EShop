@@ -1,0 +1,764 @@
+﻿@inject EShop.Application.Interfaces.ICategoryService CategoryService
+@{
+    var menuCategories = await CategoryService.GetMenuAsync();
+    // حداکثر ۴ دسته اصلی در ردیف اول نمایش داده می‌شوند (هر کدام می‌تواند فرزندان و نوه‌ها داشته باشد)
+    var topCategories = menuCategories.Take(4).ToList();
+    var extraCategories = menuCategories.Skip(4).ToList();
+}
+
+<div class="mega-menu-wrap" id="megaMenuWrap">
+    <button class="mega-menu-toggle" id="megaMenuToggle" aria-label="باز کردن دسته‌بندی‌ها">
+        <i class="fas fa-bars"></i>
+        <span>همه دسته‌بندی‌ها</span>
+        <i class="fas fa-chevron-down mega-chevron"></i>
+    </button>
+
+    <div class="mega-menu-panel" id="megaMenuPanel">
+        @if (!menuCategories.Any())
+        {
+            <div class="mega-menu-empty">
+                <i class="fas fa-box-open"></i>
+                <p>هنوز دسته‌بندی‌ای تعریف نشده است</p>
+                <a href="/admin/categories">رفتن به پنل مدیریت</a>
+            </div>
+        }
+        else
+        {
+            <!-- هدر پنل -->
+            <div class="mega-menu-header">
+                <div>
+                    <strong>همه دسته‌بندی‌ها</strong>
+                    <span>@menuCategories.Count دسته اصلی · @menuCategories.Sum(c => c.ProductCount) محصول</span>
+                </div>
+                <a href="/shop" class="mega-menu-all">
+                    مشاهده همه <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+
+            <!-- گرید اصلی سه‌سطحی -->
+            <div class="mega-menu-grid">
+                @foreach (var cat in topCategories)
+                {
+                    var hasGrandChildren = cat.Children.Any(c => c.Children.Any());
+
+                    <div class="mega-column @(hasGrandChildren ? "mega-column-wide" : "")">
+                        <a href="/category/@cat.Slug" class="mega-column-title">
+                            <span class="mega-icon">
+                                @if (!string.IsNullOrEmpty(cat.Icon))
+                                {
+                                    <i class="@cat.Icon"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-folder"></i>
+                                }
+                            </span>
+                            <span>@cat.Name</span>
+                            <span class="mega-column-count">@cat.ProductCount</span>
+                        </a>
+
+                        @if (cat.Children.Any())
+                        {
+                            <div class="mega-children-scroll">
+                                @foreach (var child in cat.Children.Take(10))
+                                {
+                                    <div class="mega-child-group @(child.Children.Any() ? "has-grandchildren" : "")">
+                                        <!-- سطح ۲: فرزند -->
+                                        <a href="/category/@child.Slug" class="mega-child-link">
+                                            <span>@child.Name</span>
+                                            @if (child.ProductCount > 0)
+                                            {
+                                                <span class="mega-count">@child.ProductCount</span>
+                                            }
+                                        </a>
+
+                                        <!-- سطح ۳: نوه‌ها -->
+                                        @if (child.Children.Any())
+                                        {
+                                            <ul class="mega-grandchildren">
+                                                @foreach (var gc in child.Children.Take(6))
+                                                {
+                                                    <li>
+                                                        <a href="/category/@gc.Slug">
+                                                            <i class="fas fa-angle-left mega-gc-arrow"></i>
+                                                            <span>@gc.Name</span>
+                                                        </a>
+                                                    </li>
+                                                }
+                                                @if (child.Children.Count > 6)
+                                                {
+                                                    <li>
+                                                        <a href="/category/@child.Slug" class="mega-more">
+                                                            + @(child.Children.Count - 6) مورد دیگر
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                    </div>
+                                }
+                                @if (cat.Children.Count > 10)
+                                {
+                                    <a href="/category/@cat.Slug" class="mega-more-block">
+                                        مشاهده همه @(cat.Children.Count) زیردسته
+                                        <i class="fas fa-arrow-left"></i>
+                                    </a>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mega-empty-children">
+                                <a href="/category/@cat.Slug">مشاهده محصولات</a>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- دسته‌های اضافه (سطح ۱ و ۲ برای دسته‌های بعدی) -->
+            @if (extraCategories.Any())
+            {
+                <div class="mega-menu-extra">
+                    <div class="mega-extra-title">
+                        <i class="fas fa-plus-circle"></i>
+                        سایر دسته‌بندی‌ها
+                    </div>
+                    <div class="mega-extra-list">
+                        @foreach (var cat in extraCategories)
+                        {
+                            <div class="mega-extra-item">
+                                <a href="/category/@cat.Slug" class="mega-extra-link">
+                                    @if (!string.IsNullOrEmpty(cat.Icon))
+                                    {
+                                        <i class="@cat.Icon"></i>
+                                    }
+                                    <span>@cat.Name</span>
+                                    @if (cat.ProductCount > 0)
+                                    {
+                                        <span class="mega-count">@cat.ProductCount</span>
+                                    }
+                                </a>
+                                @if (cat.Children.Any())
+                                {
+                                    <ul class="mega-extra-sublist">
+                                        @foreach (var child in cat.Children.Take(5))
+                                        {
+                                            <li><a href="/category/@child.Slug">@child.Name</a></li>
+                                        }
+                                        @if (cat.Children.Count > 5)
+                                        {
+                                            <li><a href="/category/@cat.Slug" class="mega-more">+@(cat.Children.Count - 5)</a></li>
+                                        }
+                                    </ul>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- بنرها -->
+            <div class="mega-menu-footer">
+                <a href="/shop?discounted=true" class="mega-banner mega-banner-sale">
+                    <div class="mega-banner-icon"><i class="fas fa-fire"></i></div>
+                    <div class="mega-banner-content">
+                        <strong>فروش ویژه</strong>
+                        <span>تا ۷۰٪ تخفیف روی محصولات منتخب</span>
+                    </div>
+                    <i class="fas fa-arrow-left mega-banner-arrow"></i>
+                </a>
+                <a href="/shop?sort=best_selling" class="mega-banner mega-banner-best">
+                    <div class="mega-banner-icon"><i class="fas fa-star"></i></div>
+                    <div class="mega-banner-content">
+                        <strong>پرفروش‌ترین‌ها</strong>
+                        <span>محبوب‌ترین محصولات مشتریان</span>
+                    </div>
+                    <i class="fas fa-arrow-left mega-banner-arrow"></i>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .mega-menu-wrap {
+        position: relative;
+        display: inline-block;
+    }
+
+    /* ────── دکمه ────── */
+    .mega-menu-toggle {
+        background: rgba(255,255,255,.15);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,.3);
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
+        transition: all .2s;
+    }
+
+        .mega-menu-toggle:hover,
+        .mega-menu-toggle.active {
+            background: rgba(255,255,255,.25);
+        }
+
+    .mega-chevron {
+        font-size: 10px;
+        transition: transform .25s;
+    }
+
+    .mega-menu-toggle.active .mega-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* ────── پنل ────── */
+    .mega-menu-panel {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 12px 40px rgba(0,0,0,.15);
+        width: 1200px;
+        max-width: 95vw;
+        z-index: 999;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(-15px);
+        transition: all .25s;
+        overflow: hidden;
+        color: #333;
+    }
+
+        .mega-menu-panel.open {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    /* ────── هدر ────── */
+    .mega-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(135deg, #f0f9ff, #fff);
+    }
+
+        .mega-menu-header strong {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--dark);
+            display: block;
+        }
+
+        .mega-menu-header span {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+    .mega-menu-all {
+        font-size: 12px;
+        color: var(--primary);
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ────── گرید اصلی ────── */
+    .mega-menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 8px;
+        padding: 16px;
+    }
+
+    .mega-column {
+        padding: 10px 12px;
+        border-radius: 10px;
+        transition: background .2s;
+        border: 1px solid transparent;
+    }
+
+        .mega-column:hover {
+            background: #f8fafc;
+            border-color: var(--border);
+        }
+
+    .mega-column-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 800;
+        font-size: 13px;
+        color: var(--dark);
+        text-decoration: none;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        border-bottom: 2px solid var(--border);
+        transition: all .2s;
+    }
+
+    .mega-column:hover .mega-column-title {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+    }
+
+    .mega-icon {
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e6f4ff;
+        color: var(--primary);
+        border-radius: 6px;
+        font-size: 11px;
+        flex-shrink: 0;
+    }
+
+    .mega-column-count {
+        margin-right: auto;
+        font-size: 10px;
+        color: var(--gray);
+        background: var(--light);
+        padding: 1px 8px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    /* ────── اسکرول داخلی ستون ────── */
+    .mega-children-scroll {
+        max-height: 380px;
+        overflow-y: auto;
+        padding-left: 4px;
+    }
+
+        .mega-children-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .mega-children-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+    /* ────── گروه فرزند ────── */
+    .mega-child-group {
+        margin-bottom: 4px;
+        padding: 4px 0;
+        border-bottom: 1px dashed #f1f5f9;
+    }
+
+        .mega-child-group:last-child {
+            border-bottom: none;
+        }
+
+        .mega-child-group.has-grandchildren {
+            padding-bottom: 6px;
+        }
+
+    .mega-child-link {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 8px;
+        border-radius: 6px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .15s;
+    }
+
+        .mega-child-link:hover {
+            background: #f0f9ff;
+            color: var(--primary);
+            padding-right: 12px;
+        }
+
+    .mega-child-group.has-grandchildren .mega-child-link {
+        color: var(--dark);
+        font-weight: 700;
+    }
+
+    .mega-count {
+        font-size: 10px;
+        color: var(--gray);
+        background: var(--light);
+        padding: 0 6px;
+        border-radius: 6px;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    /* ────── سطح ۳: نوه‌ها ────── */
+    .mega-grandchildren {
+        list-style: none;
+        padding: 4px 16px 0 0;
+        margin: 0;
+        border-right: 2px solid #e6f4ff;
+        margin-right: 8px;
+    }
+
+        .mega-grandchildren li {
+            margin-bottom: 1px;
+        }
+
+        .mega-grandchildren a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--gray);
+            text-decoration: none;
+            transition: all .15s;
+        }
+
+            .mega-grandchildren a:hover {
+                background: #f0f9ff;
+                color: var(--primary);
+                padding-right: 12px;
+            }
+
+    .mega-gc-arrow {
+        font-size: 8px;
+        opacity: .4;
+        transition: opacity .15s;
+    }
+
+    .mega-grandchildren a:hover .mega-gc-arrow {
+        opacity: 1;
+    }
+
+    .mega-more {
+        color: var(--primary) !important;
+        font-weight: 600;
+        font-size: 11px;
+        padding: 4px 8px;
+        display: inline-block;
+    }
+
+    .mega-more-block {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 11px;
+        text-decoration: none;
+        padding: 6px 8px;
+        border-radius: 4px;
+        transition: all .2s;
+    }
+
+        .mega-more-block:hover {
+            background: #f0f9ff;
+        }
+
+    .mega-empty-children {
+        padding: 8px 4px;
+    }
+
+        .mega-empty-children a {
+            font-size: 12px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+    /* ────── دسته‌های اضافه ────── */
+    .mega-menu-extra {
+        padding: 14px 20px;
+        background: var(--light);
+        border-top: 1px solid var(--border);
+    }
+
+    .mega-extra-title {
+        font-weight: 800;
+        font-size: 12px;
+        color: var(--dark);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .mega-extra-title i {
+            color: var(--primary);
+        }
+
+    .mega-extra-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 8px;
+    }
+
+    .mega-extra-item {
+        background: #fff;
+        border-radius: 8px;
+        padding: 8px 10px;
+        border: 1px solid transparent;
+        transition: all .2s;
+    }
+
+        .mega-extra-item:hover {
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+    .mega-extra-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--dark);
+        text-decoration: none;
+    }
+
+        .mega-extra-link i {
+            color: var(--primary);
+            font-size: 11px;
+        }
+
+        .mega-extra-link .mega-count {
+            margin-right: auto;
+        }
+
+    .mega-extra-sublist {
+        list-style: none;
+        padding: 4px 12px 0 0;
+        margin: 4px 0 0 0;
+        border-top: 1px dashed var(--border);
+        padding-top: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+        .mega-extra-sublist a {
+            font-size: 10px;
+            color: var(--gray);
+            text-decoration: none;
+            padding: 2px 6px;
+            background: var(--light);
+            border-radius: 4px;
+            transition: all .15s;
+        }
+
+            .mega-extra-sublist a:hover {
+                background: var(--primary);
+                color: #fff;
+            }
+
+    /* ────── بنرها ────── */
+    .mega-menu-footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+    }
+
+    .mega-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all .2s;
+        color: #fff;
+    }
+
+        .mega-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,.15);
+        }
+
+    .mega-banner-sale {
+        background: linear-gradient(135deg, #ff4757, #ff6b81);
+    }
+
+    .mega-banner-best {
+        background: linear-gradient(135deg, #0088cc, #00a0f0);
+    }
+
+    .mega-banner-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(255,255,255,.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .mega-banner-content {
+        flex: 1;
+    }
+
+        .mega-banner-content strong {
+            display: block;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        .mega-banner-content span {
+            display: block;
+            font-size: 11px;
+            opacity: .9;
+        }
+
+    .mega-banner-arrow {
+        font-size: 14px;
+        opacity: .8;
+    }
+
+    /* ────── خالی ────── */
+    .mega-menu-empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--gray);
+    }
+
+        .mega-menu-empty i {
+            font-size: 48px;
+            opacity: .3;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .mega-menu-empty p {
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .mega-menu-empty a {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+    /* ────── ریسپانسیو ────── */
+    @@media (max-width: 1199px) {
+        .mega-menu-panel {
+            width: 950px;
+        }
+
+        .mega-menu-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 991px) {
+        .mega-menu-panel {
+            position: fixed;
+            top: auto;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            width: 100%;
+            max-width: 100%;
+            border-radius: 16px 16px 0 0;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+        }
+
+            .mega-menu-panel.open {
+                transform: translateY(0);
+            }
+
+        .mega-menu-grid {
+            grid-template-columns: 1fr 1fr;
+            padding: 12px;
+        }
+
+        .mega-menu-footer {
+            grid-template-columns: 1fr;
+        }
+
+        .mega-children-scroll {
+            max-height: none;
+        }
+
+        .mega-extra-list {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 575px) {
+        .mega-menu-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .mega-menu-toggle span {
+            display: none;
+        }
+
+        .mega-menu-extra {
+            padding: 12px 14px;
+        }
+    }
+</style>
+
+<script>
+    (function () {
+        const toggle = document.getElementById('megaMenuToggle');
+        const panel = document.getElementById('megaMenuPanel');
+        const wrap = document.getElementById('megaMenuWrap');
+        if (!toggle || !panel) return;
+
+        toggle.addEventListener('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            if (panel.classList.contains('open')) close();
+            else open();
+        });
+
+        function open() {
+            panel.classList.add('open');
+            toggle.classList.add('active');
+        }
+        function close() {
+            panel.classList.remove('open');
+            toggle.classList.remove('active');
+        }
+
+        document.addEventListener('click', e => {
+            if (!wrap.contains(e.target)) close();
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') close();
+        });
+
+        if (window.innerWidth > 991) {
+            let hoverTimer;
+            wrap.addEventListener('mouseenter', () => {
+                clearTimeout(hoverTimer);
+                hoverTimer = setTimeout(open, 100);
+            });
+            wrap.addEventListener('mouseleave', () => {
+                clearTimeout(hoverTimer);
+                hoverTimer = setTimeout(close, 300);
+            });
+        }
+    })();
+</script>

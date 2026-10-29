@@ -1,0 +1,195 @@
+﻿@model AttributeEditDto
+@{
+    ViewData["Title"] = $"ویرایش: {Model.Name}";
+    var isColorType = Model.Type == AttributeType.Color;
+}
+
+<div style="display:grid;grid-template-columns:1fr 1.2fr;gap:20px;">
+    <div>
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <partial name="_Form" model="Model" />
+        </form>
+    </div>
+
+    <div class="panel">
+        <div class="panel-title">
+            <i class="fas fa-list"></i> مقادیر ممکن (@Model.Options.Count)
+        </div>
+
+        <!-- افزودن Option -->
+        <div style="padding:12px;background:var(--light);border-radius:10px;margin-bottom:16px;">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input type="text" id="newOptionValue" placeholder="مثال: قرمز، XL، چرم"
+                       class="form-control" style="flex:1;min-width:150px;" />
+
+                @if (isColorType)
+                {
+                    <input type="color" id="newOptionColor" value="#ff0000"
+                           style="width:44px;height:40px;border:1px solid var(--border);border-radius:8px;padding:2px;cursor:pointer;" />
+                }
+
+                <button type="button" onclick="addOption()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> افزودن
+                </button>
+            </div>
+        </div>
+
+        <!-- لیست Optionها -->
+        @if (!Model.Options.Any())
+        {
+            <div style="text-align:center;padding:30px;color:var(--gray);">
+                <i class="fas fa-list" style="font-size:40px;opacity:.3;"></i>
+                <p style="margin-top:8px;font-size:12px;">هنوز مقداری تعریف نشده</p>
+            </div>
+        }
+        else
+        {
+            <div id="optionsContainer" style="display:flex;flex-direction:column;gap:6px;">
+                @foreach (var o in Model.Options)
+                {
+                    <div class="option-row" data-id="@o.Id" data-order="@o.DisplayOrder"
+                         style="display:flex;align-items:center;gap:10px;padding:10px;
+                                        border:1px solid var(--border);border-radius:8px;background:#fff;">
+                        <span style="cursor:grab;color:var(--gray);">⋮⋮</span>
+
+                        @if (isColorType && !string.IsNullOrEmpty(o.ColorCode))
+                        {
+                            <div class="color-preview" style="width:26px;height:26px;border-radius:50%;
+                                                    border:2px solid var(--border);background:@o.ColorCode;"></div>
+                        }
+
+                        <input type="text" class="opt-value" value="@o.Value" data-original="@o.Value"
+                               style="flex:1;border:1px solid transparent;padding:4px 8px;border-radius:4px;
+                                              font-size:12px;font-weight:600;font-family:inherit;"
+                               onfocus="this.style.borderColor='var(--primary)';this.style.background='#fff';"
+                               onblur="saveInline(this, @o.Id, @o.DisplayOrder)" />
+
+                        @if (isColorType)
+                        {
+                            <input type="color" class="opt-color" value="@(o.ColorCode ?? "#000000")"
+                                   data-id="@o.Id"
+                                   style="width:30px;height:30px;border:1px solid var(--border);border-radius:6px;padding:2px;cursor:pointer;"
+                                   onchange="saveColor(this, @o.Id, @o.DisplayOrder)" />
+                        }
+
+                        @if (o.UsageCount > 0)
+                        {
+                            <span style="background:#fff3e0;color:var(--warning);padding:1px 6px;
+                                                     border-radius:6px;font-size:10px;">
+                                @o.UsageCount
+                            </span>
+                        }
+
+                        <button type="button" onclick="delOption(@o.Id, '@o.Value', @o.UsageCount)"
+                                style="background:#fdeaea;color:var(--danger);border:none;
+                                               padding:5px 8px;border-radius:6px;cursor:pointer;font-size:11px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        const attrId = @Model.Id;
+        const isColorType = @(isColorType ? "true" : "false");
+        function token() { return $('input[name="__RequestVerificationToken"]').val() || ''; }
+
+        async function addOption() {
+            const value = document.getElementById('newOptionValue').value.trim();
+            if (!value) { showToast('مقدار را وارد کنید', 'error'); return; }
+
+            const fd = new FormData();
+            fd.append('attributeId', attrId);
+            fd.append('Value', value);
+            if (isColorType) fd.append('ColorCode', document.getElementById('newOptionColor').value);
+            fd.append('__RequestVerificationToken', token());
+
+            const res = await fetch('/admin/attributes/addoption', { method: 'POST', body: fd }).then(r => r.json());
+            if (res.success) location.reload();
+            else showToast(res.message, 'error');
+        }
+
+        async function saveInline(input, optionId, order) {
+            input.style.borderColor = 'transparent';
+            input.style.background = 'transparent';
+            if (input.value === input.dataset.original || !input.value.trim()) {
+                input.value = input.dataset.original;
+                return;
+            }
+            const colorInput = document.querySelector(`.opt-color[data-id="${optionId}"]`);
+            const fd = new FormData();
+            fd.append('attributeId', attrId);
+            fd.append('Id', optionId);
+            fd.append('Value', input.value.trim());
+            if (colorInput) fd.append('ColorCode', colorInput.value);
+            fd.append('DisplayOrder', order);
+            fd.append('__RequestVerificationToken', token());
+
+            const res = await fetch('/admin/attributes/updateoption', { method: 'POST', body: fd }).then(r => r.json());
+            if (res.success) {
+                input.dataset.original = input.value.trim();
+                showToast('ذخیره شد', 'success');
+            } else {
+                input.value = input.dataset.original;
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function saveColor(input, optionId, order) {
+            const row = input.closest('.option-row');
+            const valueInput = row.querySelector('.opt-value');
+            const fd = new FormData();
+            fd.append('attributeId', attrId);
+            fd.append('Id', optionId);
+            fd.append('Value', valueInput.value.trim());
+            fd.append('ColorCode', input.value);
+            fd.append('DisplayOrder', order);
+            fd.append('__RequestVerificationToken', token());
+
+            const res = await fetch('/admin/attributes/updateoption', { method: 'POST', body: fd }).then(r => r.json());
+            if (res.success) {
+                const preview = row.querySelector('.color-preview');
+                if (preview) preview.style.background = input.value;
+                showToast('رنگ بروزرسانی شد', 'success');
+            } else showToast(res.message, 'error');
+        }
+
+        async function delOption(optionId, value, usage) {
+            if (usage > 0) { showToast(`این مقدار در ${usage} محصول استفاده شده`, 'error'); return; }
+            if (!confirm(`حذف «${value}»؟`)) return;
+
+            const fd = new FormData();
+            fd.append('attributeId', attrId);
+            fd.append('optionId', optionId);
+            fd.append('__RequestVerificationToken', token());
+
+            const res = await fetch('/admin/attributes/deleteoption', { method: 'POST', body: fd }).then(r => r.json());
+            if (res.success) document.querySelector(`.option-row[data-id="${optionId}"]`)?.remove();
+            else showToast(res.message, 'error');
+        }
+
+        const container = document.getElementById('optionsContainer');
+        if (container && typeof Sortable !== 'undefined') {
+            new Sortable(container, {
+                handle: 'span', animation: 200,
+                onEnd: async function () {
+                    const ids = Array.from(container.querySelectorAll('.option-row'))
+                        .map(r => parseInt(r.dataset.id));
+                    const res = await fetch(`/admin/attributes/reorderoptions?attributeId=${attrId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token() },
+                        body: JSON.stringify(ids)
+                    }).then(r => r.json());
+                    if (res.success) showToast('ترتیب ذخیره شد');
+                }
+            });
+        }
+    </script>
+}

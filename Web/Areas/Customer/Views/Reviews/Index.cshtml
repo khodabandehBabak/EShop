@@ -1,0 +1,53 @@
+﻿@model MyReviewsPageDto
+@{
+    ViewData["Title"] = "نظرات من";
+}
+
+<div class="panel">
+    <div class="panel-title"><i class="fas fa-comments"></i> نظرات من (@Model.Total)</div>
+
+    @if (!Model.Items.Any())
+    {
+        <p style="text-align:center;padding:40px;color:var(--gray);">هنوز نظری ثبت نکرده‌اید</p>
+    }
+    else
+    {
+        foreach (var r in Model.Items)
+        {
+            <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+                <div style="display:flex;gap:10px;margin-bottom:8px;">
+                    @if (!string.IsNullOrEmpty(r.ProductImage))
+                    {
+                        <img src="@r.ProductImage" style="width:50px;height:50px;border-radius:6px;object-fit:cover;" />
+                    }
+                    <div style="flex:1;">
+                        <a href="/product/@r.ProductSlug" style="font-weight:700;font-size:13px;color:var(--dark);">@r.ProductName</a>
+                        <div style="color:#ffc107;font-size:12px;">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span style="opacity:@(i <= r.Rating ? 1 : .3);">★</span>
+                            }
+                        </div>
+                    </div>
+                    <span class="status-badge status-@(r.IsApproved ? "delivered" : "pending")">
+                        @(r.IsApproved ? "تأیید شده" : "در انتظار")
+                    </span>
+                </div>
+                @if (!string.IsNullOrEmpty(r.Title))
+                {
+                    <div style="font-weight:700;font-size:12px;">@r.Title</div>
+                }
+                @if (!string.IsNullOrEmpty(r.Comment))
+                {
+                    <p style="font-size:12px;line-height:1.7;color:#475569;">@r.Comment</p>
+                }
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                    @if (r.CanEdit)
+                    {
+                        <a href="/review/edit/@r.Id" class="btn btn-primary btn-sm">ویرایش</a>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

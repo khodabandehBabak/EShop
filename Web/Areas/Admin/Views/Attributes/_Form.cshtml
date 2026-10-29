@@ -1,0 +1,48 @@
+﻿@model AttributeEditDto
+@{
+    var isEdit = Model.Id > 0;
+}
+
+<div class="panel">
+    <div class="panel-title">
+        <i class="fas fa-sliders-h"></i> اطلاعات ویژگی
+    </div>
+
+    <div class="form-label">نام ویژگی *</div>
+    <input asp-for="Name" class="form-control" required style="margin-bottom:12px;" />
+
+    <div class="form-label">Slug</div>
+    <input asp-for="Slug" class="form-control" dir="ltr" style="margin-bottom:12px;" />
+
+    <div class="form-label">نوع نمایش *</div>
+    <select asp-for="Type" class="form-select" style="margin-bottom:12px;">
+        <option value="@((int)AttributeType.Select)">انتخابی (Dropdown)</option>
+        <option value="@((int)AttributeType.Color)">رنگی (دایره رنگی)</option>
+        <option value="@((int)AttributeType.Text)">متنی (ورودی آزاد)</option>
+    </select>
+    @if (isEdit)
+    {
+        <small style="color:var(--gray);font-size:11px;display:block;margin-bottom:12px;">
+            ⚠️ در صورت استفاده در محصولات، نوع قابل تغییر نیست.
+        </small>
+    }
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+            <div class="form-label">ترتیب نمایش</div>
+            <input asp-for="DisplayOrder" type="number" class="form-control" />
+        </div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:8px;">
+            <label style="cursor:pointer;">
+                <input asp-for="IsFilterable" type="checkbox" /> قابل فیلتر
+            </label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width:100%;height:44px;">
+        <i class="fas fa-save"></i> @(isEdit ? "ذخیره" : "ایجاد")
+    </button>
+    <a asp-action="Index" class="btn btn-outline" style="width:100%;margin-top:8px;text-align:center;">
+        انصراف
+    </a>
+</div>

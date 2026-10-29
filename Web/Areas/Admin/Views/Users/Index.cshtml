@@ -1,0 +1,79 @@
+﻿@model List<UserListItemDto>
+@{
+    ViewData["Title"] = "مدیریت کاربران"; var roles = ViewBag.Roles as List<SelectListItem> ?? new();
+}
+
+<div class="panel">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <form method="get" style="display:flex;gap:8px;">
+            <input name="search" value="@ViewBag.Search" placeholder="جستجو..." class="form-control" style="min-width:200px;" />
+            <select name="role" class="form-select" style="min-width:130px;">
+                <option value="">همه نقش‌ها</option>
+                @foreach (var r in roles)
+                {
+                    <option value="@r.Value" selected="@r.Selected">@r.Text</option>
+                }
+            </select>
+            <button type="submit" class="btn btn-primary">جستجو</button>
+        </form>
+        <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> کاربر جدید</a>
+    </div>
+
+    <table class="admin-table">
+        <thead><tr><th>کاربر</th><th>موبایل</th><th>نقش‌ها</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr id="row-@u.Id">
+                    <td><div style="font-weight:600;">@u.FullName</div><div style="font-size:11px;color:var(--gray);">@u.Email</div></td>
+                    <td dir="ltr" style="font-size:12px;">@u.PhoneNumber</td>
+                    <td>
+                        @foreach (var r in u.Roles)
+                        {
+                            <span style="background:#e6f4ff;color:var(--primary);padding:2px 8px;border-radius:8px;font-size:10px;margin:2px;">
+                                @r
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        <button onclick="toggleActive(@u.Id, this)" data-active="@u.IsActive.ToString().ToLower()"
+                                style="border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;
+                                           color:@(u.IsActive ? "var(--success)" : "var(--danger)");">
+                            @(u.IsActive ? "✓ فعال" : "✗ غیرفعال")
+                        </button>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px;">
+                            <a asp-action="Edit" asp-route-id="@u.Id" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i></a>
+                            <button onclick="del(@u.Id, '@u.FullName')" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleActive(id, btn) {
+            fetch('/admin/users/toggleactive/' + id, { method: 'POST',
+                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || '' }
+            }).then(r => r.json()).then(res => {
+                if (res.success) {
+                    btn.textContent = res.isActive ? '✓ فعال' : '✗ غیرفعال';
+                    btn.style.color = res.isActive ? 'var(--success)' : 'var(--danger)';
+                } else showToast(res.message, 'error');
+            });
+        }
+        function del(id, name) {
+            if (!confirm(`حذف/غیرفعال‌سازی «${name}»؟`)) return;
+            fetch('/admin/users/delete/' + id, { method: 'POST',
+                headers: { 'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || '' }
+            }).then(r => r.json()).then(res => {
+                if (res.success) { document.getElementById('row-' + id)?.remove(); showToast(res.message); }
+                else showToast(res.message, 'error');
+            });
+        }
+    </script>
+}

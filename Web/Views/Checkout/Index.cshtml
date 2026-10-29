@@ -1,0 +1,379 @@
+﻿@* @model CheckoutInputDto
+@{
+    var summary = ViewBag.Summary as CheckoutSummaryDto;
+
+    var codEnabled = ViewBag.CodEnabled as bool? ?? true;
+    var onlineEnabled = ViewBag.OnlineEnabled as bool? ?? true;
+}
+
+<div class="container" style="padding:20px;">
+    <h1 style="font-size:22px;font-weight:800;margin-bottom:20px;">تسویه حساب</h1>
+
+    <form method="post" action="/payment/start" id="checkoutForm">
+        @Html.AntiForgeryToken()
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+            <div>
+                <div class="panel" style="background:#fff;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h3 style="font-size:14px;font-weight:700;margin-bottom:16px;">
+                        <i class="fas fa-map-marker-alt" style="color:var(--primary);"></i> اطلاعات گیرنده
+                    </h3>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div>
+                            <label class="form-label">نام گیرنده *</label>
+                            <input asp-for="ReceiverName" class="form-control" required />
+                        </div>
+                        <div>
+                            <label class="form-label">شماره موبایل *</label>
+                            <input asp-for="ReceiverPhone" class="form-control" dir="ltr" maxlength="11" required />
+                        </div>
+                        <div>
+                            <label class="form-label">استان *</label>
+                            <input asp-for="Province" class="form-control" required />
+                        </div>
+                        <div>
+                            <label class="form-label">شهر *</label>
+                            <input asp-for="City" class="form-control" required />
+                        </div>
+                        <div>
+                            <label class="form-label">کد پستی *</label>
+                            <input asp-for="PostalCode" class="form-control" dir="ltr" maxlength="10" required />
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <label class="form-label">آدرس کامل *</label>
+                        <textarea asp-for="FullAddress" class="form-control" rows="2" required></textarea>
+                    </div>
+                </div>
+
+                <div class="panel" style="background:#fff;padding:20px;border-radius:12px;margin-bottom:20px;">
+                    <h3 style="font-size:14px;font-weight:700;margin-bottom:16px;">
+                        <i class="fas fa-truck" style="color:var(--primary);"></i> روش ارسال
+                    </h3>
+                    @foreach (var opt in summary.ShippingOptions)
+                    {
+                        <label style="display:flex;align-items:center;gap:10px;padding:12px;
+                                              border:2px solid var(--border);border-radius:10px;
+                                              cursor:pointer;margin-bottom:8px;transition:all .2s;"
+                               class="ship-option">
+                            <input type="radio" name="ShippingMethod" value="@((int)opt.Method)"
+                                   checked="@(opt.Method == ShippingMethod.Normal)" />
+                            <div style="flex:1;">
+                                <div style="font-weight:700;font-size:13px;">@opt.Title</div>
+                                <div style="font-size:11px;color:var(--gray);">@opt.Description · @opt.EstimatedDelivery</div>
+                            </div>
+                            <div style="font-weight:700;color:var(--primary);">
+                                @(opt.IsFree ? "رایگان" : opt.Cost.ToString("N0") + " تومان")
+                            </div>
+                        </label>
+                    }
+                </div>
+
+                <div class="panel" style="background:#fff;padding:20px;border-radius:12px;">
+                    <h3 style="font-size:14px;font-weight:700;margin-bottom:16px;">
+                        <i class="fas fa-credit-card" style="color:var(--primary);"></i> روش پرداخت
+                    </h3>
+                    @if (onlineEnabled)
+                    {
+                        <label style="display:flex;align-items:center;gap:10px;padding:12px;
+                                              border:2px solid var(--border);border-radius:10px;
+                                              cursor:pointer;margin-bottom:8px;">
+                            <input type="radio" name="PaymentMethod" value="1" checked />
+                            <div style="flex:1;">
+                                <div style="font-weight:700;font-size:13px;">پرداخت آنلاین</div>
+                                <div style="font-size:11px;color:var(--gray);">از طریق درگاه امن زرین‌پال</div>
+                            </div>
+                        </label>
+                    }
+                    @if (codEnabled)
+                    {
+                        <label style="display:flex;align-items:center;gap:10px;padding:12px;
+                                              border:2px solid var(--border);border-radius:10px;
+                                              cursor:pointer;">
+                            <input type="radio" name="PaymentMethod" value="0"
+                                   checked="@(!onlineEnabled)" />
+                            <div style="flex:1;">
+                                <div style="font-weight:700;font-size:13px;">پرداخت درب منزل</div>
+                                <div style="font-size:11px;color:var(--gray);">پرداخت هنگام تحویل</div>
+                            </div>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <div style="background:#fff;border-radius:12px;padding:20px;height:fit-content;
+                        position:sticky;top:20px;">
+                <h3 style="font-size:15px;font-weight:800;margin-bottom:16px;padding-bottom:12px;
+                           border-bottom:1px solid var(--border);">
+                    سفارش شما
+                </h3>
+
+                @foreach (var item in summary.Items)
+                {
+                    <div style="display:flex;justify-content:space-between;font-size:12px;
+                                        padding:6px 0;border-bottom:1px dashed var(--border);">
+                        <span>@item.Name × @item.Quantity</span>
+                        <span style="font-weight:600;">@item.LineTotal.ToString("N0")</span>
+                    </div>
+                }
+
+                <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:13px;margin-top:8px;">
+                    <span>جمع کالاها:</span>
+                    <span style="font-weight:600;">@summary.SubTotal.ToString("N0")</span>
+                
+                <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;">
+                    <span>هزینه ارسال:</span>
+                    <span id="shippingCostDisplay" style="font-weight:600;color:var(--success);">
+                        @(summary.ShippingCost == 0 ? "رایگان" : summary.ShippingCost.ToString("N0"))
+                    </span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding-top:12px;
+            border-top:2px solid var(--border);margin-top:8px;
+            font-size:16px;font-weight:800;">
+                    <span>مبلغ کل:</span>
+                    <span id="totalAmountDisplay" style="color:var(--success);">
+                        @summary.TotalAmount.ToString("N0")
+                    </span>
+                </div>
+                <button type="submit" class="btn btn-primary"
+                        style="width:100%;margin-top:20px;height:48px;font-size:14px;">
+                    <i class="fas fa-lock"></i> پرداخت و ثبت سفارش
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+     <script>
+        // Update shipping cost on change
+        document.querySelectorAll('input[name="ShippingMethod"]').forEach(r => {
+            r.addEventListener('change', async () => {
+                const fd = new FormData();
+                fd.append('method', r.value);
+                fd.append('__RequestVerificationToken',
+                    document.querySelector('input[name="__RequestVerificationToken"]').value);
+                const res = await fetch('/checkout/getshippingcost', { method: 'POST', body: fd })
+                    .then(r => r.json());
+                if (res.success) location.reload();
+            });
+        });
+    </script> 
+
+    <script>
+        // ✅ به‌جای reload، DOM را مستقیم update کن
+        document.querySelectorAll('input[name="ShippingMethod"]').forEach(r => {
+            r.addEventListener('change', async () => {
+                const fd = new FormData();
+                fd.append('method', r.value);
+                fd.append('__RequestVerificationToken',
+                    document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+                try {
+                    const res = await fetch('/checkout/getshippingcost', {
+                        method: 'POST',
+                        body: fd
+                    }).then(r => r.json());
+
+                    if (res.success) {
+                        // ✅ آپدیت هزینه ارسال و مبلغ کل در DOM
+                        const shippingEl = document.getElementById('shippingCostDisplay');
+                        const totalEl = document.getElementById('totalAmountDisplay');
+
+                        if (shippingEl) {
+                            shippingEl.textContent = res.shippingCost === 0
+                                ? 'رایگان'
+                                : Number(res.shippingCost).toLocaleString('fa-IR');
+                        }
+                        if (totalEl) {
+                            totalEl.textContent = Number(res.total).toLocaleString('fa-IR');
+                        }
+
+                        // ✅ هایلایت کارت انتخاب‌شده
+                        document.querySelectorAll('label.ship-option').forEach(l => {
+                            l.style.borderColor = 'var(--border)';
+                            l.style.background = '#fff';
+                        });
+                        r.closest('label.ship-option').style.borderColor = 'var(--primary)';
+                        r.closest('label.ship-option').style.background = '#f0f9ff';
+
+                        showToast('روش ارسال بروزرسانی شد', 'success');
+                    } else {
+                        showToast(res.message || 'خطا', 'error');
+                    }
+                } catch {
+                    showToast('خطا در ارتباط با سرور', 'error');
+                }
+            });
+        });
+    </script>
+} *@
+
+
+@model CheckoutInputDto
+@{
+    var summary = ViewBag.Summary as CheckoutSummaryDto;
+    var codEnabled = ViewBag.CodEnabled as bool? ?? true;
+    var onlineEnabled = ViewBag.OnlineEnabled as bool? ?? true;
+}
+
+<div class="container" style="padding-top:16px;">
+    <h1 style="font-size:1.25rem;margin-bottom:20px;">تسویه حساب</h1>
+
+    <form method="post" action="/payment/start" id="checkoutForm">
+        @Html.AntiForgeryToken()
+
+        <div class="checkout-layout">
+            <div>
+                <div class="card mb-4">
+                    <h3 class="card-title"><i class="fas fa-map-marker-alt"></i> اطلاعات گیرنده</h3>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div style="grid-column:1/-1;">
+                            <label class="form-label">نام گیرنده *</label>
+                            <input asp-for="ReceiverName" class="form-control" required />
+                        </div>
+                        <div style="grid-column:1/-1;">
+                            <label class="form-label">شماره موبایل *</label>
+                            <input asp-for="ReceiverPhone" class="form-control" dir="ltr" maxlength="11" required />
+                        </div>
+                        <div>
+                            <label class="form-label">استان *</label>
+                            <input asp-for="Province" class="form-control" required />
+                        </div>
+                        <div>
+                            <label class="form-label">شهر *</label>
+                            <input asp-for="City" class="form-control" required />
+                        </div>
+                        <div style="grid-column:1/-1;">
+                            <label class="form-label">کد پستی *</label>
+                            <input asp-for="PostalCode" class="form-control" dir="ltr" maxlength="10" required />
+                        </div>
+                        <div style="grid-column:1/-1;">
+                            <label class="form-label">آدرس کامل *</label>
+                            <textarea asp-for="FullAddress" class="form-control" rows="2" required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <h3 class="card-title"><i class="fas fa-truck"></i> روش ارسال</h3>
+                    @foreach (var opt in summary.ShippingOptions)
+                    {
+                        <label class="ship-option @(opt.Method == ShippingMethod.Normal ? "active" : "")">
+                            <input type="radio" name="ShippingMethod" value="@((int)opt.Method)"
+                                   checked="@(opt.Method == ShippingMethod.Normal)" />
+                            <div class="ship-option-body">
+                                <div class="ship-option-title">@opt.Title</div>
+                                <div class="ship-option-desc">@opt.Description · @opt.EstimatedDelivery</div>
+                            </div>
+                            <div class="ship-option-price">
+                                @(opt.IsFree ? "رایگان" : opt.Cost.ToString("N0"))
+                            </div>
+                        </label>
+                    }
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-credit-card"></i> روش پرداخت</h3>
+                    @if (onlineEnabled)
+                    {
+                        <label class="ship-option active">
+                            <input type="radio" name="PaymentMethod" value="1" checked />
+                            <div class="ship-option-body">
+                                <div class="ship-option-title">پرداخت آنلاین</div>
+                                <div class="ship-option-desc">از طریق درگاه امن زرین‌پال</div>
+                            </div>
+                            <i class="fas fa-lock" style="color:var(--success);font-size:18px;"></i>
+                        </label>
+                    }
+                    @if (codEnabled)
+                    {
+                        <label class="ship-option">
+                            <input type="radio" name="PaymentMethod" value="0" checked="@(!onlineEnabled)" />
+                            <div class="ship-option-body">
+                                <div class="ship-option-title">پرداخت درب منزل</div>
+                                <div class="ship-option-desc">پرداخت هنگام تحویل</div>
+                            </div>
+                            <i class="fas fa-money-bill" style="color:var(--warning);font-size:18px;"></i>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <div class="cart-summary">
+                <h3 style="font-size:14px;margin-bottom:14px;padding-bottom:12px;
+                           border-bottom:1px solid var(--border);">
+                    سفارش شما
+                </h3>
+
+                @foreach (var item in summary.Items)
+                {
+                    <div style="display:flex;justify-content:space-between;font-size:12px;
+                                    padding:6px 0;border-bottom:1px dashed var(--border);">
+                        <span style="color:var(--text-2);">@item.Name × @item.Quantity</span>
+                        <span style="font-weight:600;">@item.LineTotal.ToString("N0")</span>
+                    </div>
+                }
+
+                <div class="summary-row" style="margin-top:8px;">
+                    <span style="color:var(--text-2);">جمع کالاها</span>
+                    <span style="font-weight:600;">@summary.SubTotal.ToString("N0")</span>
+                </div>
+                <div class="summary-row">
+                    <span style="color:var(--text-2);">هزینه ارسال</span>
+                    <span id="shippingCostDisplay" style="font-weight:600;color:var(--success);">
+                        @(summary.ShippingCost == 0 ? "رایگان" : summary.ShippingCost.ToString("N0"))
+                    </span>
+                </div>
+                <div class="summary-row total">
+                    <span>مبلغ کل</span>
+                    <span id="totalAmountDisplay" class="price">@summary.TotalAmount.ToString("N0") تومان</span>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg btn-block" style="margin-top:16px;">
+                    <i class="fas fa-lock"></i> پرداخت و ثبت سفارش
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Active state on ship options
+        document.querySelectorAll('label.ship-option').forEach(label => {
+            label.addEventListener('click', () => {
+                document.querySelectorAll('label.ship-option').forEach(l => l.classList.remove('active'));
+                label.classList.add('active');
+            });
+        });
+
+        // Update shipping cost
+        document.querySelectorAll('input[name="ShippingMethod"]').forEach(r => {
+            r.addEventListener('change', async () => {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const fd = new FormData();
+                fd.append('method', r.value);
+                fd.append('__RequestVerificationToken', token);
+
+                try {
+                    const res = await fetch('/checkout/getshippingcost', {
+                        method: 'POST',
+                        body: fd
+                    }).then(r => r.json());
+
+                    if (res.success) {
+                        const sEl = document.getElementById('shippingCostDisplay');
+                        const tEl = document.getElementById('totalAmountDisplay');
+                        if (sEl) sEl.textContent = res.shippingCost === 0
+                            ? 'رایگان'
+                            : Number(res.shippingCost).toLocaleString('fa-IR');
+                        if (tEl) tEl.textContent = Number(res.total).toLocaleString('fa-IR') + ' تومان';
+                    }
+                } catch { /* ignore */ }
+            });
+        });
+    </script>
+}

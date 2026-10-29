@@ -1,0 +1,9 @@
+﻿@model AttributeEditDto
+@{
+    ViewData["Title"] = "ویژگی جدید";
+}
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <partial name="_Form" model="Model" />
+</form>

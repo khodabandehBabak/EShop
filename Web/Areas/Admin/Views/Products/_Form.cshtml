@@ -1,0 +1,137 @@
+﻿@model ProductEditDto
+@{
+    var isEdit = Model.Id > 0;
+    var categories = ViewBag.Categories as List<SelectListItem> ?? new();
+    var brands = ViewBag.Brands as List<SelectListItem> ?? new();
+}
+
+<input type="hidden" asp-for="Id" />
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+    <div>
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-cube"></i> اطلاعات اصلی</div>
+
+            <div class="form-label">نام محصول *</div>
+            <input asp-for="Name" class="form-control" style="margin-bottom:12px;" required />
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div>
+                    <div class="form-label">Slug</div>
+                    <input asp-for="Slug" class="form-control" dir="ltr" />
+                </div>
+                <div>
+                    <div class="form-label">SKU</div>
+                    <input asp-for="Sku" class="form-control" dir="ltr" />
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div>
+                    <div class="form-label">دسته‌بندی *</div>
+                    <select asp-for="CategoryId" asp-items="categories" class="form-select" required>
+                        <option value="">-- انتخاب --</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="form-label">برند</div>
+                    <select asp-for="BrandId" asp-items="brands" class="form-select">
+                        <option value="">-- بدون برند --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-label">توضیح کوتاه</div>
+            <textarea asp-for="ShortDescription" class="form-control" rows="2" maxlength="500" style="margin-bottom:12px;"></textarea>
+
+            <div class="form-label">توضیحات کامل</div>
+            <textarea asp-for="FullDescription" class="form-control" rows="6"></textarea>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-money-bill"></i> قیمت و موجودی</div>
+
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#f3e8ff;
+                          border-radius:8px;margin-bottom:12px;cursor:pointer;">
+                <input asp-for="HasVariants" type="checkbox" />
+                <span style="font-weight:700;font-size:12px;">این محصول دارای متغیر است</span>
+            </label>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                    <div class="form-label">قیمت (تومان) *</div>
+                    <input asp-for="Price" type="number" class="form-control" min="0" required />
+                </div>
+                <div>
+                    <div class="form-label">قیمت با تخفیف</div>
+                    <input asp-for="DiscountPrice" type="number" class="form-control" min="0" />
+                </div>
+                <div>
+                    <div class="form-label">موجودی</div>
+                    <input asp-for="Stock" type="number" class="form-control" min="0" />
+                </div>
+                <div>
+                    <div class="form-label">آستانه هشدار</div>
+                    <input asp-for="LowStockThreshold" type="number" class="form-control" min="0" />
+                </div>
+            </div>
+        </div>
+
+        @if (isEdit && Model.Images.Any())
+        {
+            <div class="panel">
+                <div class="panel-title"><i class="fas fa-images"></i> تصاویر موجود</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    @for (int i = 0; i < Model.Images.Count; i++)
+                    {
+                        <div style="position:relative;">
+                            <input type="hidden" asp-for="Images[i].Id" />
+                            <input type="hidden" asp-for="Images[i].Path" />
+                            <img src="@Model.Images[i].Path" style="width:90px;height:90px;object-fit:cover;border-radius:8px;" />
+                            <label style="position:absolute;top:4px;right:4px;background:#fff;
+                                                  padding:2px 6px;border-radius:4px;font-size:9px;cursor:pointer;">
+                                <input type="radio" asp-for="Images[i].IsMain" value="true" />
+                                اصلی
+                            </label>
+                            <label style="position:absolute;top:4px;left:4px;background:#e74c3c;color:#fff;
+                                                  padding:2px 6px;border-radius:4px;font-size:9px;cursor:pointer;">
+                                <input type="checkbox" asp-for="Images[i].ToDelete" style="display:none;" />
+                                ×
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div>
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-cog"></i> وضعیت</div>
+            <label style="display:block;margin-bottom:10px;cursor:pointer;">
+                <input asp-for="IsActive" type="checkbox" /> فعال
+            </label>
+            <label style="display:block;margin-bottom:10px;cursor:pointer;">
+                <input asp-for="IsFeatured" type="checkbox" /> ویژه
+            </label>
+            <label style="display:block;cursor:pointer;">
+                <input asp-for="IsSpecialOffer" type="checkbox" /> پیشنهاد ویژه
+            </label>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-image"></i> آپلود تصاویر جدید</div>
+            <input type="file" asp-for="NewImageFiles" accept="image/*" multiple
+                   style="width:100%;padding:8px;border:1px dashed var(--border);border-radius:8px;" />
+        </div>
+
+        <div class="panel">
+            <button type="submit" class="btn btn-primary" style="width:100%;height:44px;">
+                <i class="fas fa-save"></i> @(isEdit ? "ذخیره تغییرات" : "ایجاد محصول")
+            </button>
+            <a href="/admin/products" class="btn btn-outline" style="width:100%;margin-top:8px;text-align:center;">
+                انصراف
+            </a>
+        </div>
+    </div>
+</div>

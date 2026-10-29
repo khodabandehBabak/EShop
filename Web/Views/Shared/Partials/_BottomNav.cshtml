@@ -1,0 +1,25 @@
+﻿@{
+    var path = Context.Request.Path.Value?.ToLower() ?? "/";
+    string Active(params string[] prefixes) =>
+        prefixes.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+}
+
+<nav class="bottom-nav">
+    <a href="/" class="bottom-nav-item @Active("/")">
+        <i class="fas fa-home"></i>
+        <span>خانه</span>
+    </a>
+    <a href="/shop" class="bottom-nav-item @Active("/shop", "/category", "/brand", "/product")">
+        <i class="fas fa-store"></i>
+        <span>فروشگاه</span>
+    </a>
+    <a href="/cart" class="bottom-nav-item @Active("/cart")">
+        <i class="fas fa-shopping-bag"></i>
+        <span>سبد</span>
+        <span class="cart-badge" style="display:none;">0</span>
+    </a>
+    <a href="/customer" class="bottom-nav-item @Active("/customer")">
+        <i class="fas fa-user"></i>
+        <span>حساب</span>
+    </a>
+</nav>

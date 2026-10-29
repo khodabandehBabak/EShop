@@ -1,0 +1,64 @@
+﻿@model CategoryEditDto
+@{
+    var isEdit = Model.Id > 0;
+    var parents = ViewBag.Parents as List<SelectListItem> ?? new();
+}
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+    <div class="panel">
+        <div class="panel-title"><i class="fas fa-list"></i> اطلاعات دسته</div>
+
+        <div class="form-label">نام *</div>
+        <input asp-for="Name" class="form-control" style="margin-bottom:12px;" required />
+
+        <div class="form-label">Slug</div>
+        <input asp-for="Slug" class="form-control" dir="ltr" style="margin-bottom:12px;" />
+
+        <div class="form-label">دسته والد</div>
+        <select asp-for="ParentId" asp-items="parents" class="form-select" style="margin-bottom:12px;"></select>
+
+        <div class="form-label">توضیحات</div>
+        <textarea asp-for="Description" class="form-control" rows="3" style="margin-bottom:12px;"></textarea>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <div class="form-label">آیکون</div>
+                <input asp-for="Icon" class="form-control" dir="ltr" placeholder="fas fa-box" />
+            </div>
+            <div>
+                <div class="form-label">ترتیب</div>
+                <input asp-for="DisplayOrder" type="number" class="form-control" />
+            </div>
+        </div>
+
+        <div style="margin-top:16px;">
+            <label style="display:block;margin-bottom:8px;cursor:pointer;">
+                <input asp-for="IsActive" type="checkbox" /> فعال
+            </label>
+            <label style="cursor:pointer;">
+                <input asp-for="ShowInMenu" type="checkbox" /> نمایش در منو
+            </label>
+        </div>
+    </div>
+
+    <div>
+        <div class="panel">
+            <div class="panel-title"><i class="fas fa-image"></i> تصویر</div>
+            @if (!string.IsNullOrEmpty(Model.ExistingImageUrl))
+            {
+                <img src="@Model.ExistingImageUrl" style="width:100%;border-radius:8px;margin-bottom:8px;" />
+                <label style="display:block;font-size:12px;color:var(--danger);margin-bottom:8px;">
+                    <input asp-for="RemoveImage" type="checkbox" /> حذف تصویر فعلی
+                </label>
+            }
+            <input type="file" asp-for="ImageFile" accept="image/*" style="width:100%;" />
+        </div>
+
+        <div class="panel">
+            <button type="submit" class="btn btn-primary" style="width:100%;height:44px;">
+                <i class="fas fa-save"></i> @(isEdit ? "ذخیره" : "ایجاد")
+            </button>
+            <a asp-action="Index" class="btn btn-outline" style="width:100%;margin-top:8px;text-align:center;">انصراف</a>
+        </div>
+    </div>
+</div>
